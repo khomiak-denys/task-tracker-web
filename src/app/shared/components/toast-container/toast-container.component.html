@@ -1,0 +1,47 @@
+<aside class="toast-viewport" aria-label="Notifications" aria-live="polite">
+  @for (toast of notificationService.notifications(); track toast.id) {
+    <div
+      class="toast-card toast-{{ toast.type }}"
+      role="alert"
+      [attr.data-id]="toast.id"
+      (click)="onDismiss(toast.id)"
+    >
+      <div class="toast-body">
+        <div class="toast-content">
+          <p class="toast-message">{{ toast.message }}</p>
+
+          @if (toast.action) {
+            <button
+              type="button"
+              class="toast-action-btn"
+              (click)="onAction(toast); $event.stopPropagation()"
+            >
+              {{ toast.action.label }}
+            </button>
+          }
+        </div>
+
+        <button
+          type="button"
+          class="toast-close-btn"
+          aria-label="Dismiss notification"
+          (click)="onDismiss(toast.id, $event)"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" stroke-linecap="round" />
+            <line x1="6" y1="6" x2="18" y2="18" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      @if (toast.durationMs > 0) {
+        <div class="toast-progress-track">
+          <div
+            class="toast-progress-bar"
+            [style.animation-duration.ms]="toast.durationMs"
+          ></div>
+        </div>
+      }
+    </div>
+  }
+</aside>
