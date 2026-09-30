@@ -1,0 +1,117 @@
+/* ================================================================
+   Dashboard Stub Styles (Azure Design Language)
+   ================================================================ */
+
+$azure-primary: #0078d4;
+$azure-primary-hover: #106ebe;
+$azure-text-primary: #323130;
+$azure-text-secondary: #605e5c;
+$azure-border: #e1dfdd;
+$azure-bg: #f5f5f5;
+$azure-card-bg: #ffffff;
+
+.dashboard-container {
+  min-height: 100vh;
+  background: $azure-bg;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  background: $azure-card-bg;
+  border-bottom: 1px solid $azure-border;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.header-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: $azure-text-primary;
+  letter-spacing: -0.01em;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-label {
+  font-size: 0.8125rem;
+  color: $azure-text-secondary;
+}
+
+.logout-btn {
+  padding: 0.375rem 0.875rem;
+  border: 1px solid $azure-border;
+  border-radius: 4px;
+  background: transparent;
+  color: $azure-text-primary;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+
+  &:hover {
+    background: $azure-bg;
+    border-color: #c8c6c4;
+  }
+}
+
+.dashboard-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.welcome-card {
+  text-align: center;
+  max-width: 480px;
+  background: $azure-card-bg;
+  padding: 3rem 2.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: $azure-text-primary;
+    margin: 0 0 0.75rem;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    font-size: 0.9375rem;
+    color: $azure-text-secondary;
+    line-height: 1.5;
+    margin: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-header {
+    padding: 0.625rem 1rem;
+  }
+
+  .user-label {
+    display: none;
+  }
+
+  .welcome-card {
+    padding: 2rem 1.5rem;
+  }
+}

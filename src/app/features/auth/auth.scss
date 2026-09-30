@@ -1,0 +1,327 @@
+/* ================================================================
+   Azure-inspired Auth Page Styles
+   ================================================================ */
+
+/* -- Design tokens ------------------------------------------------ */
+$azure-primary: #0078d4;
+$azure-primary-hover: #106ebe;
+$azure-primary-pressed: #005a9e;
+$azure-accent: #00bcf2;
+$azure-bg: #f0f2f5;
+$azure-card-bg: #ffffff;
+$azure-text-primary: #323130;
+$azure-text-secondary: #605e5c;
+$azure-text-tertiary: #a19f9d;
+$azure-border: #e1dfdd;
+$azure-border-focus: #0078d4;
+$azure-error: #d13438;
+$azure-error-bg: #fde7e9;
+$azure-input-bg: #fafafa;
+$azure-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04);
+$azure-shadow-md: 0 6px 24px rgba(0, 0, 0, 0.08);
+$azure-shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.12);
+
+/* -- Container ---------------------------------------------------- */
+.auth-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1.5rem;
+  overflow: hidden;
+}
+
+.auth-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(135deg, #0078d4 0%, #00bcf2 50%, #50e6ff 100%);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 80%, rgba(0, 120, 212, 0.3) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(80, 230, 255, 0.2) 0%, transparent 50%);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+}
+
+/* -- Card --------------------------------------------------------- */
+.auth-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  background: $azure-card-bg;
+  border-radius: 8px;
+  box-shadow: $azure-shadow-lg;
+  padding: 2.5rem 2rem 2rem;
+  animation: cardSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes cardSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* -- Header ------------------------------------------------------- */
+.auth-header {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.auth-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  margin-bottom: 0.5rem;
+}
+
+.auth-logo-text {
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: $azure-text-primary;
+  letter-spacing: -0.02em;
+}
+
+.auth-subtitle {
+  font-size: 0.875rem;
+  color: $azure-text-secondary;
+  margin: 0;
+}
+
+/* -- Error banner ------------------------------------------------- */
+.auth-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  background: $azure-error-bg;
+  color: $azure-error;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  animation: errorFadeIn 0.3s ease;
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+}
+
+@keyframes errorFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* -- Form --------------------------------------------------------- */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.125rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+
+  label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: $azure-text-primary;
+  }
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid $azure-border;
+  border-radius: 4px;
+  background: $azure-input-bg;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+
+  &:focus-within {
+    border-color: $azure-border-focus;
+    box-shadow: 0 0 0 1px $azure-border-focus;
+    background: $azure-card-bg;
+  }
+
+  &.error {
+    border-color: $azure-error;
+
+    &:focus-within {
+      box-shadow: 0 0 0 1px $azure-error;
+    }
+  }
+}
+
+.input-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: $azure-text-tertiary;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.625rem 0.75rem 0.625rem 2.25rem;
+  font-size: 0.875rem;
+  color: $azure-text-primary;
+  outline: none;
+  font-family: inherit;
+  min-width: 0;
+
+  &::placeholder {
+    color: $azure-text-tertiary;
+  }
+}
+
+.toggle-password {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.625rem;
+  border: none;
+  background: transparent;
+  color: $azure-text-tertiary;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: $azure-text-secondary;
+  }
+}
+
+.field-error {
+  font-size: 0.75rem;
+  color: $azure-error;
+  animation: errorFadeIn 0.2s ease;
+}
+
+/* -- Submit button ------------------------------------------------ */
+.auth-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.6875rem 1.25rem;
+  margin-top: 0.375rem;
+  border: none;
+  border-radius: 4px;
+  background: $azure-primary;
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
+
+  &:hover:not(:disabled) {
+    background: $azure-primary-hover;
+    box-shadow: 0 2px 8px rgba(0, 120, 212, 0.3);
+  }
+
+  &:active:not(:disabled) {
+    background: $azure-primary-pressed;
+    transform: scale(0.99);
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
+/* -- Spinner ------------------------------------------------------ */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* -- Footer ------------------------------------------------------- */
+.auth-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid $azure-border;
+  font-size: 0.8125rem;
+  color: $azure-text-secondary;
+}
+
+.link-button {
+  border: none;
+  background: transparent;
+  color: $azure-primary;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: $azure-primary-hover;
+    text-decoration: underline;
+  }
+}
+
+/* -- Responsive --------------------------------------------------- */
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 2rem 1.25rem 1.5rem;
+  }
+
+  .auth-logo-text {
+    font-size: 1.25rem;
+  }
+}
