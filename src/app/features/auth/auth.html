@@ -21,239 +21,241 @@
       <p class="auth-subtitle">Manage your projects with confidence</p>
     </div>
 
-    <!-- Login form -->
-    @if (mode() === 'login') {
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form" id="login-form">
-        <div class="form-field">
-          <label for="login-email">Email</label>
-          <div class="input-wrapper" [class.error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
-            <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M2 4L8 8.5L14 4M2 4V12H14V4M2 4H14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <input
-              id="login-email"
-              type="email"
-              formControlName="email"
-              placeholder="name@company.com"
-              autocomplete="email"
-            />
+    @if (state$ | async; as state) {
+      <!-- Login form -->
+      @if (state.mode === 'login') {
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form" id="login-form">
+          <div class="form-field">
+            <label for="login-email">Email</label>
+            <div class="input-wrapper" [class.error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M2 4L8 8.5L14 4M2 4V12H14V4M2 4H14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <input
+                id="login-email"
+                type="email"
+                formControlName="email"
+                placeholder="name@company.com"
+                autocomplete="email"
+              />
+            </div>
+            @if (loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched && !loginForm.get('email')?.hasError('serverError')) {
+              <span class="field-error">Email is required</span>
+            }
+            @if (loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched && !loginForm.get('email')?.hasError('serverError')) {
+              <span class="field-error">Enter a valid email address</span>
+            }
           </div>
-          @if (loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched && !loginForm.get('email')?.hasError('serverError')) {
-            <span class="field-error">Email is required</span>
-          }
-          @if (loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched && !loginForm.get('email')?.hasError('serverError')) {
-            <span class="field-error">Enter a valid email address</span>
-          }
-        </div>
 
-        <div class="form-field">
-          <label for="login-password">Password</label>
-          <div class="input-wrapper" [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
-            <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
-              <path d="M5 7V5C5 3.34 6.34 2 8 2C9.66 2 11 3.34 11 5V7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-            </svg>
-            <input
-              id="login-password"
-              [type]="showPassword() ? 'text' : 'password'"
-              formControlName="password"
-              placeholder="Enter your password"
-              autocomplete="current-password"
-            />
-            <button type="button" class="toggle-password" (click)="togglePasswordVisibility()" tabindex="-1">
-              @if (showPassword()) {
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
-                  <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
-                  <path d="M3 13L13 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                </svg>
-              } @else {
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
-                  <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
-                </svg>
-              }
-            </button>
+          <div class="form-field">
+            <label for="login-password">Password</label>
+            <div class="input-wrapper" [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M5 7V5C5 3.34 6.34 2 8 2C9.66 2 11 3.34 11 5V7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+              <input
+                id="login-password"
+                [type]="state.showPassword ? 'text' : 'password'"
+                formControlName="password"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+              />
+              <button type="button" class="toggle-password" (click)="togglePasswordVisibility()" tabindex="-1">
+                @if (state.showPassword) {
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
+                    <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
+                    <path d="M3 13L13 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                  </svg>
+                } @else {
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
+                    <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
+                  </svg>
+                }
+              </button>
+            </div>
+            @if (loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched && !loginForm.get('password')?.hasError('serverError')) {
+              <span class="field-error">Password is required</span>
+            }
           </div>
-          @if (loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched && !loginForm.get('password')?.hasError('serverError')) {
-            <span class="field-error">Password is required</span>
-          }
-        </div>
 
-        <button
-          type="submit"
-          class="auth-submit"
-          [disabled]="loading()"
-          id="btn-login"
-        >
-          @if (loading()) {
-            <span class="spinner"></span>
-            <span>Signing in...</span>
-          } @else {
-            <span>Sign in</span>
-          }
-        </button>
-      </form>
-    }
-
-    <!-- Register form -->
-    @if (mode() === 'register') {
-      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form" id="register-form">
-        <div class="form-field">
-          <label for="register-email">Email</label>
-          <div class="input-wrapper" [class.error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
-            <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M2 4L8 8.5L14 4M2 4V12H14V4M2 4H14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <input
-              id="register-email"
-              type="email"
-              formControlName="email"
-              placeholder="name@company.com"
-              autocomplete="email"
-            />
-          </div>
-          @if (registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched && !registerForm.get('email')?.hasError('serverError')) {
-            <span class="field-error">Email is required</span>
-          }
-          @if (registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched && !registerForm.get('email')?.hasError('serverError')) {
-            <span class="field-error">Enter a valid email address</span>
-          }
-        </div>
-
-        <div class="form-field">
-          <label for="register-username">Username</label>
-          <div class="input-wrapper" [class.error]="registerForm.get('userName')?.invalid && registerForm.get('userName')?.touched">
-            <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.2"/>
-              <path d="M3 14C3 11.24 5.24 9 8 9C10.76 9 13 11.24 13 14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-            </svg>
-            <input
-              id="register-username"
-              type="text"
-              formControlName="userName"
-              placeholder="johndoe"
-              autocomplete="username"
-            />
-          </div>
-          @if (registerForm.get('userName')?.hasError('required') && registerForm.get('userName')?.touched && !registerForm.get('userName')?.hasError('serverError')) {
-            <span class="field-error">Username is required</span>
-          }
-          @if (registerForm.get('userName')?.hasError('minlength') && registerForm.get('userName')?.touched && !registerForm.get('userName')?.hasError('serverError')) {
-            <span class="field-error">Username must be at least 3 characters</span>
-          }
-        </div>
-
-        <div class="form-field">
-          <label for="register-password">Password</label>
-          <div class="input-wrapper" [class.error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
-            <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
-              <path d="M5 7V5C5 3.34 6.34 2 8 2C9.66 2 11 3.34 11 5V7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-            </svg>
-            <input
-              id="register-password"
-              [type]="showPassword() ? 'text' : 'password'"
-              formControlName="password"
-              placeholder="Min. 6 characters"
-              autocomplete="new-password"
-            />
-            <button type="button" class="toggle-password" (click)="togglePasswordVisibility()" tabindex="-1">
-              @if (showPassword()) {
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
-                  <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
-                  <path d="M3 13L13 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                </svg>
-              } @else {
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
-                  <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
-                </svg>
-              }
-            </button>
-          </div>
-          @if (registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched && !registerForm.get('password')?.hasError('serverError')) {
-            <span class="field-error">Password is required</span>
-          }
-          @if (registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched && !registerForm.get('password')?.hasError('serverError')) {
-            <span class="field-error">Password must be at least 6 characters</span>
-          }
-        </div>
-
-        <div class="form-field">
-          <label for="register-confirm-password">Confirm Password</label>
-          <div
-            class="input-wrapper"
-            [class.error]="
-              (registerForm.get('confirmPassword')?.invalid || registerForm.hasError('passwordMismatch')) &&
-              registerForm.get('confirmPassword')?.touched
-            "
+          <button
+            type="submit"
+            class="auth-submit"
+            [disabled]="state.loading"
+            id="btn-login"
           >
-            <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
-              <path d="M5 7V5C5 3.34 6.34 2 8 2C9.66 2 11 3.34 11 5V7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-            </svg>
-            <input
-              id="register-confirm-password"
-              [type]="showConfirmPassword() ? 'text' : 'password'"
-              formControlName="confirmPassword"
-              placeholder="Confirm your password"
-              autocomplete="new-password"
-            />
-            <button
-              type="button"
-              class="toggle-password"
-              (click)="toggleConfirmPasswordVisibility()"
-              tabindex="-1"
-              aria-label="Toggle confirm password visibility"
-            >
-              @if (showConfirmPassword()) {
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
-                  <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
-                  <path d="M3 13L13 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                </svg>
-              } @else {
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
-                  <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
-                </svg>
-              }
-            </button>
-          </div>
-          @if (registerForm.get('confirmPassword')?.hasError('required') && registerForm.get('confirmPassword')?.touched && !registerForm.get('confirmPassword')?.hasError('serverError')) {
-            <span class="field-error">Confirm password is required</span>
-          } @else if (registerForm.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched) {
-            <span class="field-error">Passwords do not match</span>
-          }
-        </div>
-
-        <button
-          type="submit"
-          class="auth-submit"
-          [disabled]="loading()"
-          id="btn-register"
-        >
-          @if (loading()) {
-            <span class="spinner"></span>
-            <span>Creating account...</span>
-          } @else {
-            <span>Create account</span>
-          }
-        </button>
-      </form>
-    }
-
-    <!-- Footer text -->
-    <div class="auth-footer">
-      @if (mode() === 'login') {
-        <span>Don't have an account?</span>
-        <button type="button" class="link-button" (click)="switchMode('register')">Sign up</button>
-      } @else {
-        <span>Already have an account?</span>
-        <button type="button" class="link-button" (click)="switchMode('login')">Sign in</button>
+            @if (state.loading) {
+              <span class="spinner"></span>
+              <span>Signing in...</span>
+            } @else {
+              <span>Sign in</span>
+            }
+          </button>
+        </form>
       }
-    </div>
+
+      <!-- Register form -->
+      @if (state.mode === 'register') {
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form" id="register-form">
+          <div class="form-field">
+            <label for="register-email">Email</label>
+            <div class="input-wrapper" [class.error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M2 4L8 8.5L14 4M2 4V12H14V4M2 4H14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <input
+                id="register-email"
+                type="email"
+                formControlName="email"
+                placeholder="name@company.com"
+                autocomplete="email"
+              />
+            </div>
+            @if (registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched && !registerForm.get('email')?.hasError('serverError')) {
+              <span class="field-error">Email is required</span>
+            }
+            @if (registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched && !registerForm.get('email')?.hasError('serverError')) {
+              <span class="field-error">Enter a valid email address</span>
+            }
+          </div>
+
+          <div class="form-field">
+            <label for="register-username">Username</label>
+            <div class="input-wrapper" [class.error]="registerForm.get('userName')?.invalid && registerForm.get('userName')?.touched">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M3 14C3 11.24 5.24 9 8 9C10.76 9 13 11.24 13 14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+              <input
+                id="register-username"
+                type="text"
+                formControlName="userName"
+                placeholder="johndoe"
+                autocomplete="username"
+              />
+            </div>
+            @if (registerForm.get('userName')?.hasError('required') && registerForm.get('userName')?.touched && !registerForm.get('userName')?.hasError('serverError')) {
+              <span class="field-error">Username is required</span>
+            }
+            @if (registerForm.get('userName')?.hasError('minlength') && registerForm.get('userName')?.touched && !registerForm.get('userName')?.hasError('serverError')) {
+              <span class="field-error">Username must be at least 3 characters</span>
+            }
+          </div>
+
+          <div class="form-field">
+            <label for="register-password">Password</label>
+            <div class="input-wrapper" [class.error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M5 7V5C5 3.34 6.34 2 8 2C9.66 2 11 3.34 11 5V7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+              <input
+                id="register-password"
+                [type]="state.showPassword ? 'text' : 'password'"
+                formControlName="password"
+                placeholder="Min. 6 characters"
+                autocomplete="new-password"
+              />
+              <button type="button" class="toggle-password" (click)="togglePasswordVisibility()" tabindex="-1">
+                @if (state.showPassword) {
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
+                    <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
+                    <path d="M3 13L13 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                  </svg>
+                } @else {
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
+                    <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
+                  </svg>
+                }
+              </button>
+            </div>
+            @if (registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched && !registerForm.get('password')?.hasError('serverError')) {
+              <span class="field-error">Password is required</span>
+            }
+            @if (registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched && !registerForm.get('password')?.hasError('serverError')) {
+              <span class="field-error">Password must be at least 6 characters</span>
+            }
+          </div>
+
+          <div class="form-field">
+            <label for="register-confirm-password">Confirm Password</label>
+            <div
+              class="input-wrapper"
+              [class.error]="
+                (registerForm.get('confirmPassword')?.invalid || registerForm.hasError('passwordMismatch')) &&
+                registerForm.get('confirmPassword')?.touched
+              "
+            >
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M5 7V5C5 3.34 6.34 2 8 2C9.66 2 11 3.34 11 5V7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+              <input
+                id="register-confirm-password"
+                [type]="state.showConfirmPassword ? 'text' : 'password'"
+                formControlName="confirmPassword"
+                placeholder="Confirm your password"
+                autocomplete="new-password"
+              />
+              <button
+                type="button"
+                class="toggle-password"
+                (click)="toggleConfirmPasswordVisibility()"
+                tabindex="-1"
+                aria-label="Toggle confirm password visibility"
+              >
+                @if (state.showConfirmPassword) {
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
+                    <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
+                    <path d="M3 13L13 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                  </svg>
+                } @else {
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
+                    <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
+                  </svg>
+                }
+              </button>
+            </div>
+            @if (registerForm.get('confirmPassword')?.hasError('required') && registerForm.get('confirmPassword')?.touched && !registerForm.get('confirmPassword')?.hasError('serverError')) {
+              <span class="field-error">Confirm password is required</span>
+            } @else if (registerForm.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched) {
+              <span class="field-error">Passwords do not match</span>
+            }
+          </div>
+
+          <button
+            type="submit"
+            class="auth-submit"
+            [disabled]="state.loading"
+            id="btn-register"
+          >
+            @if (state.loading) {
+              <span class="spinner"></span>
+              <span>Creating account...</span>
+            } @else {
+              <span>Create account</span>
+            }
+          </button>
+        </form>
+      }
+
+      <!-- Footer text -->
+      <div class="auth-footer">
+        @if (state.mode === 'login') {
+          <span>Don't have an account?</span>
+          <button type="button" class="link-button" (click)="switchMode('register')">Sign up</button>
+        } @else {
+          <span>Already have an account?</span>
+          <button type="button" class="link-button" (click)="switchMode('login')">Sign in</button>
+        }
+      </div>
+    }
   </div>
 </div>
