@@ -34,6 +34,11 @@ export class AuthService {
     return t ? this.decodeToken(t) : null;
   });
 
+  /** Normalized user ID from current token. */
+  readonly currentUserId = computed(() => {
+    return this.currentUser()?.sub || null;
+  });
+
   constructor(
     private readonly http: HttpClient,
     private readonly router: Router,
@@ -127,7 +132,7 @@ export class AuthService {
     return token;
   }
 
-  /** Decode a JWT without external libraries (base64url). */
+  /** Decode a JWT without external libraries (base64url) and normalize claims. */
   private decodeToken(token: string): JwtPayload | null {
     try {
       const parts = token.split('.');
@@ -135,7 +140,41 @@ export class AuthService {
       const payload = parts[1]
         .replace(/-/g, '+')
         .replace(/_/g, '/');
-      return JSON.parse(atob(payload)) as JwtPayload;
+      const raw = JSON.parse(atob(payload)) as Record<string, unknown>;
+
+      const sub =
+        (raw['sub'] as string) ||
+        (raw['nameid'] as string) ||
+        (raw['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] as string) ||
+        '';
+
+      const email =
+        (raw['email'] as string) ||
+        (raw['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] as string) ||
+        '';
+
+      const unique_name =
+        (raw['unique_name'] as string) ||
+        (raw['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] as string) ||
+        (raw['name'] as string) ||
+        '';
+
+      const role =
+        (raw['role'] as string | string[]) ||
+        (raw['roles'] as string | string[]) ||
+        (raw['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] as string | string[]) ||
+        'User';
+
+      return {
+        ...raw,
+        sub,
+        email,
+        unique_name,
+        name: (raw['name'] as string) || unique_name,
+        role,
+        exp: typeof raw['exp'] === 'number' ? raw['exp'] : 0,
+        iat: typeof raw['iat'] === 'number' ? raw['iat'] : 0,
+      } as JwtPayload;
     } catch {
       return null;
     }

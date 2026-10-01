@@ -21,17 +21,6 @@
       <p class="auth-subtitle">Manage your projects with confidence</p>
     </div>
 
-    <!-- Error banner -->
-    @if (errorMessage()) {
-      <div class="auth-error" role="alert">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
-          <path d="M8 4.5V8.5M8 10.5V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-        <span>{{ errorMessage() }}</span>
-      </div>
-    }
-
     <!-- Login form -->
     @if (mode() === 'login') {
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form" id="login-form">
@@ -49,10 +38,10 @@
               autocomplete="email"
             />
           </div>
-          @if (loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched) {
+          @if (loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched && !loginForm.get('email')?.hasError('serverError')) {
             <span class="field-error">Email is required</span>
           }
-          @if (loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched) {
+          @if (loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched && !loginForm.get('email')?.hasError('serverError')) {
             <span class="field-error">Enter a valid email address</span>
           }
         </div>
@@ -86,7 +75,7 @@
               }
             </button>
           </div>
-          @if (loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched) {
+          @if (loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched && !loginForm.get('password')?.hasError('serverError')) {
             <span class="field-error">Password is required</span>
           }
         </div>
@@ -124,10 +113,10 @@
               autocomplete="email"
             />
           </div>
-          @if (registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched) {
+          @if (registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched && !registerForm.get('email')?.hasError('serverError')) {
             <span class="field-error">Email is required</span>
           }
-          @if (registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched) {
+          @if (registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched && !registerForm.get('email')?.hasError('serverError')) {
             <span class="field-error">Enter a valid email address</span>
           }
         </div>
@@ -147,10 +136,10 @@
               autocomplete="username"
             />
           </div>
-          @if (registerForm.get('userName')?.hasError('required') && registerForm.get('userName')?.touched) {
+          @if (registerForm.get('userName')?.hasError('required') && registerForm.get('userName')?.touched && !registerForm.get('userName')?.hasError('serverError')) {
             <span class="field-error">Username is required</span>
           }
-          @if (registerForm.get('userName')?.hasError('minlength') && registerForm.get('userName')?.touched) {
+          @if (registerForm.get('userName')?.hasError('minlength') && registerForm.get('userName')?.touched && !registerForm.get('userName')?.hasError('serverError')) {
             <span class="field-error">Username must be at least 3 characters</span>
           }
         </div>
@@ -184,10 +173,10 @@
               }
             </button>
           </div>
-          @if (registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched) {
+          @if (registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched && !registerForm.get('password')?.hasError('serverError')) {
             <span class="field-error">Password is required</span>
           }
-          @if (registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched) {
+          @if (registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched && !registerForm.get('password')?.hasError('serverError')) {
             <span class="field-error">Password must be at least 6 characters</span>
           }
         </div>
@@ -233,7 +222,7 @@
               }
             </button>
           </div>
-          @if (registerForm.get('confirmPassword')?.hasError('required') && registerForm.get('confirmPassword')?.touched) {
+          @if (registerForm.get('confirmPassword')?.hasError('required') && registerForm.get('confirmPassword')?.touched && !registerForm.get('confirmPassword')?.hasError('serverError')) {
             <span class="field-error">Confirm password is required</span>
           } @else if (registerForm.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched) {
             <span class="field-error">Passwords do not match</span>

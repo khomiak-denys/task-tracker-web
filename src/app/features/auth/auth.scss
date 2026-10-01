@@ -107,36 +107,6 @@ $azure-shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.12);
   margin: 0;
 }
 
-/* -- Error banner ------------------------------------------------- */
-.auth-error {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  margin-bottom: 1rem;
-  background: $azure-error-bg;
-  color: $azure-error;
-  border-radius: 4px;
-  font-size: 0.8125rem;
-  line-height: 1.4;
-  animation: errorFadeIn 0.3s ease;
-
-  svg {
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
-}
-
-@keyframes errorFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 /* -- Form --------------------------------------------------------- */
 .auth-form {
