@@ -100,6 +100,26 @@ describe('ProfileComponent', () => {
     expect(component.snapshot.profileSuccessMessage).toBe('Profile updated successfully.');
   });
 
+  it('onSaveProfile_Should_NotSendUpdateRequest_When_UsernameAndFullNameUnchanged', () => {
+    component['onSaveProfile']();
+
+    expect(userServiceSpy.updateProfile).not.toHaveBeenCalled();
+    expect(notificationServiceSpy.info).toHaveBeenCalledWith('No changes were made.');
+    expect(component.snapshot.savingProfile).toBeFalse();
+  });
+
+  it('onSaveProfile_Should_NotSendUpdateRequest_When_ValuesDifferOnlyByWhitespace', () => {
+    component['profileForm'].patchValue({
+      fullName: '  John Doe  ',
+      userName: '  john_doe  ',
+    });
+
+    component['onSaveProfile']();
+
+    expect(userServiceSpy.updateProfile).not.toHaveBeenCalled();
+    expect(notificationServiceSpy.info).toHaveBeenCalledWith('No changes were made.');
+  });
+
   it('onChangePassword_Should_ChangePasswordAndNotify_When_ValidFormSubmitted', () => {
     userServiceSpy.changePassword.and.returnValue(of(void 0));
 

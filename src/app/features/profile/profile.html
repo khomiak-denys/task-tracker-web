@@ -178,12 +178,13 @@
                         formControlName="userName"
                         placeholder="Username"
                       />
-                      @if (profileForm.get('userName')?.hasError('required') && profileForm.get('userName')?.touched) {
-                        <span class="field-error">Username is required</span>
-                      }
-                      @if (profileForm.get('userName')?.hasError('minlength') && profileForm.get('userName')?.touched) {
-                        <span class="field-error">Username must be at least 3 characters</span>
-                      }
+                      <div class="field-error-slot" aria-live="polite">
+                        @if (profileForm.get('userName')?.hasError('required') && profileForm.get('userName')?.touched) {
+                          <span class="field-error">Username is required</span>
+                        } @else if (profileForm.get('userName')?.hasError('minlength') && profileForm.get('userName')?.touched) {
+                          <span class="field-error">Username must be at least 3 characters</span>
+                        }
+                      </div>
                     </div>
 
                     <div class="field-group">
@@ -309,9 +310,11 @@
                             }
                           </button>
                         </div>
-                        @if (passwordForm.get('currentPassword')?.hasError('required') && passwordForm.get('currentPassword')?.touched && !passwordForm.get('currentPassword')?.hasError('serverError')) {
-                          <span class="field-error">Current password is required</span>
-                        }
+                        <div class="field-error-slot" aria-live="polite">
+                          @if (passwordForm.get('currentPassword')?.hasError('required') && passwordForm.get('currentPassword')?.touched && !passwordForm.get('currentPassword')?.hasError('serverError')) {
+                            <span class="field-error">Current password is required</span>
+                          }
+                        </div>
                       </div>
 
                       <div class="field-group">
@@ -352,12 +355,13 @@
                             }
                           </button>
                         </div>
-                        @if (passwordForm.get('newPassword')?.hasError('required') && passwordForm.get('newPassword')?.touched && !passwordForm.get('newPassword')?.hasError('serverError')) {
-                          <span class="field-error">New password is required</span>
-                        }
-                        @if (passwordForm.get('newPassword')?.hasError('minlength') && passwordForm.get('newPassword')?.touched && !passwordForm.get('newPassword')?.hasError('serverError')) {
-                          <span class="field-error">New password must be at least 6 characters</span>
-                        }
+                        <div class="field-error-slot" aria-live="polite">
+                          @if (passwordForm.get('newPassword')?.hasError('required') && passwordForm.get('newPassword')?.touched && !passwordForm.get('newPassword')?.hasError('serverError')) {
+                            <span class="field-error">New password is required</span>
+                          } @else if (passwordForm.get('newPassword')?.hasError('minlength') && passwordForm.get('newPassword')?.touched && !passwordForm.get('newPassword')?.hasError('serverError')) {
+                            <span class="field-error">New password must be at least 6 characters</span>
+                          }
+                        </div>
                       </div>
 
                       <div class="field-group">
@@ -401,11 +405,13 @@
                             }
                           </button>
                         </div>
-                        @if (passwordForm.get('confirmNewPassword')?.hasError('required') && passwordForm.get('confirmNewPassword')?.touched && !passwordForm.get('confirmNewPassword')?.hasError('serverError')) {
-                          <span class="field-error">Please confirm your new password</span>
-                        } @else if (passwordForm.hasError('passwordMismatch') && passwordForm.get('confirmNewPassword')?.touched) {
-                          <span class="field-error">Passwords do not match</span>
-                        }
+                        <div class="field-error-slot" aria-live="polite">
+                          @if (passwordForm.get('confirmNewPassword')?.hasError('required') && passwordForm.get('confirmNewPassword')?.touched && !passwordForm.get('confirmNewPassword')?.hasError('serverError')) {
+                            <span class="field-error">Please confirm your new password</span>
+                          } @else if (passwordForm.hasError('passwordMismatch') && passwordForm.get('confirmNewPassword')?.touched) {
+                            <span class="field-error">Passwords do not match</span>
+                          }
+                        </div>
                       </div>
 
                       <div class="form-actions">

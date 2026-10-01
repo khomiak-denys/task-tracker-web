@@ -234,10 +234,20 @@ export class ProfileComponent implements OnInit {
     const uid = this.snapshot.userId;
     if (!uid) return;
 
-    this.updateState({ savingProfile: true });
     const { userName, fullName } = this.profileForm.getRawValue();
     const cleanUserName = typeof userName === 'string' ? userName.trim() : userName;
     const cleanFullName = typeof fullName === 'string' && fullName.trim() ? fullName.trim() : null;
+
+    const current = this.stateSubject.value.profile;
+    const currentUserName = current?.userName?.trim() ?? '';
+    const currentFullName = current?.fullName?.trim() ? current.fullName.trim() : null;
+
+    if (cleanUserName === currentUserName && cleanFullName === currentFullName) {
+      this.notificationService.info('No changes were made.');
+      return;
+    }
+
+    this.updateState({ savingProfile: true });
 
     this.userService
       .updateProfile(uid, { userName: cleanUserName, fullName: cleanFullName })
