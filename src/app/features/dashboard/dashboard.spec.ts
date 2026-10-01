@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { signal } from '@angular/core';
 import { DashboardComponent } from './dashboard';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -13,15 +12,14 @@ describe('DashboardComponent', () => {
   let routerSpy: jasmine.SpyObj<Router>;
 
   beforeEach(async () => {
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['currentUser', 'logout'], {
-      currentUser: signal({
-        sub: 'user-123',
-        email: 'test@example.com',
-        unique_name: 'test_user',
-        role: 'User',
-        exp: 9999999999,
-        iat: 1000000000,
-      }),
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['currentUser', 'logout']);
+    authServiceSpy.currentUser.and.returnValue({
+      sub: 'user-123',
+      email: 'test@example.com',
+      unique_name: 'test_user',
+      role: 'User',
+      exp: 9999999999,
+      iat: 1000000000,
     });
 
     notificationServiceSpy = jasmine.createSpyObj('NotificationService', ['info']);
@@ -41,33 +39,63 @@ describe('DashboardComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create and compute userInitial', () => {
+  it('Init_Should_ComputeUserInitialAndSetDefaultState_When_Created', () => {
     expect(component).toBeTruthy();
-    expect(component['userInitial']()).toBe('T');
+    expect(component.snapshot.userInitial).toBe('T');
+    expect(component.snapshot.dropdownOpen).toBeFalse();
   });
 
-  it('should toggle dropdown open and close', () => {
-    expect(component['dropdownOpen']()).toBeFalse();
+  it('toggleDropdown_Should_ToggleDropdownState_When_Invoked', () => {
+    expect(component.snapshot.dropdownOpen).toBeFalse();
 
     component['toggleDropdown']();
-    expect(component['dropdownOpen']()).toBeTrue();
+    expect(component.snapshot.dropdownOpen).toBeTrue();
 
-    component['closeDropdown']();
-    expect(component['dropdownOpen']()).toBeFalse();
+    component['toggleDropdown']();
+    expect(component.snapshot.dropdownOpen).toBeFalse();
   });
 
-  it('should navigate to /profile on onProfile', () => {
+  it('closeDropdown_Should_SetDropdownOpenToFalse_When_Invoked', () => {
+    component['toggleDropdown']();
+    expect(component.snapshot.dropdownOpen).toBeTrue();
+
+    component['closeDropdown']();
+    expect(component.snapshot.dropdownOpen).toBeFalse();
+  });
+
+  it('onProfile_Should_CloseDropdownAndNavigateToProfile_When_Invoked', () => {
     component['toggleDropdown']();
     component['onProfile']();
 
-    expect(component['dropdownOpen']()).toBeFalse();
+    expect(component.snapshot.dropdownOpen).toBeFalse();
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/profile']);
   });
 
-  it('should notify and logout on onLogout', () => {
+  it('onLogout_Should_NotifyAndCallAuthLogout_When_Invoked', () => {
     component['onLogout']();
 
     expect(notificationServiceSpy.info).toHaveBeenCalledWith('You have been signed out.');
     expect(authServiceSpy.logout).toHaveBeenCalled();
   });
+
+  it('onDocumentClick_Should_CloseDropdown_When_ClickedOutside', () => {
+    component['toggleDropdown']();
+    expect(component.snapshot.dropdownOpen).toBeTrue();
+
+    const outsideElement = document.createElement('div');
+    const mouseEvent = new MouseEvent('click', { bubbles: true });
+    Object.defineProperty(mouseEvent, 'target', { value: outsideElement });
+
+    component['onDocumentClick'](mouseEvent);
+    expect(component.snapshot.dropdownOpen).toBeFalse();
+  });
+
+  it('onEscape_Should_CloseDropdown_When_EscapePressed', () => {
+    component['toggleDropdown']();
+    expect(component.snapshot.dropdownOpen).toBeTrue();
+
+    component['onEscape']();
+    expect(component.snapshot.dropdownOpen).toBeFalse();
+  });
 });
+
