@@ -25,7 +25,9 @@ export interface JwtPayload {
   sub: string;
   email: string;
   unique_name: string;
+  name?: string;
   role: string | string[];
   exp: number;
   iat: number;
+  [key: string]: unknown;
 }
