@@ -46,27 +46,113 @@ $azure-card-bg: #ffffff;
   gap: 1rem;
 }
 
-.user-label {
-  font-size: 0.8125rem;
-  color: $azure-text-secondary;
+/* -- User menu & avatar -- */
+.user-menu-container {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.logout-btn {
-  padding: 0.375rem 0.875rem;
+.avatar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: $azure-primary;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 0;
+
+  &:focus-visible,
+  &.active {
+    outline: none;
+    box-shadow:
+      0 0 0 2px #ffffff,
+      0 0 0 4px $azure-primary;
+  }
+}
+
+.avatar-letter {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+/* -- User dropdown -- */
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 150px;
+  background: $azure-card-bg;
   border: 1px solid $azure-border;
-  border-radius: 4px;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  padding: 0.375rem 0;
+  z-index: 1000;
+  animation: dropdownFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-items {
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 0.5625rem 1rem;
+  border: none;
   background: transparent;
   color: $azure-text-primary;
-  font-size: 0.8125rem;
+  font-size: 0.84375rem;
   font-weight: 500;
   cursor: pointer;
+  text-align: left;
   transition:
     background-color 0.15s ease,
-    border-color 0.15s ease;
+    color 0.15s ease;
+
+  .dropdown-icon {
+    color: $azure-text-secondary;
+    flex-shrink: 0;
+    transition: color 0.15s ease;
+  }
 
   &:hover {
-    background: $azure-bg;
-    border-color: #c8c6c4;
+    background: #f3f2f1;
+    color: $azure-primary;
+
+    .dropdown-icon {
+      color: $azure-primary;
+    }
+  }
+
+  &.dropdown-item-danger:hover {
+    background: #fde7e9;
+    color: #d13438;
+
+    .dropdown-icon {
+      color: #d13438;
+    }
   }
 }
 
@@ -105,10 +191,6 @@ $azure-card-bg: #ffffff;
 @media (max-width: 480px) {
   .dashboard-header {
     padding: 0.625rem 1rem;
-  }
-
-  .user-label {
-    display: none;
   }
 
   .welcome-card {
