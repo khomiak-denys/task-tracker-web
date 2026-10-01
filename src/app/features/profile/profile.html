@@ -19,550 +19,552 @@
   </header>
 
   <main class="profile-main">
-    @if (loading()) {
-      <div class="loading-state">
-        <div class="spinner"></div>
-        <p>Loading profile data...</p>
-      </div>
-    } @else if (profileErrorMessage() && !profile()) {
-      <div class="error-state">
-        <div class="error-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
+    @if (vm$ | async; as vm) {
+      @if (vm.loading) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Loading profile data...</p>
         </div>
-        <h2>Access Restricted</h2>
-        <p>{{ profileErrorMessage() }}</p>
-        <a routerLink="/profile" class="btn-primary" id="btn-back-own-profile">Return to My Profile</a>
-      </div>
-    } @else {
-      <!-- Profile Hero Card -->
-      <section class="hero-card">
-        <div class="hero-avatar">{{ userInitial() }}</div>
-        <div class="hero-content">
-          <div class="hero-identity">
-            <h2 class="hero-name">{{ profile()?.fullName || profile()?.userName || 'User' }}</h2>
-            <span class="hero-username">&#64;{{ profile()?.userName }}</span>
-            @if (!isOwnProfile()) {
-              <span class="admin-view-badge">Admin view</span>
-            }
+      } @else if (vm.profileErrorMessage && !vm.profile) {
+        <div class="error-state">
+          <div class="error-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
           </div>
-          <div class="hero-meta">
-            <span class="meta-item">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                <polyline points="22,6 12,13 2,6"></polyline>
-              </svg>
-              <span>{{ profile()?.email }}</span>
-              <span
-                class="status-pill"
-                [class.status-verified]="profile()?.emailConfirmed"
-                [class.status-unverified]="!profile()?.emailConfirmed"
-              >
-                {{ profile()?.emailConfirmed ? 'Verified' : 'Unverified' }}
-              </span>
-            </span>
-            <div class="roles-list">
-              @for (role of userRoles(); track role) {
-                <span class="role-badge">{{ role }}</span>
+          <h2>Access Restricted</h2>
+          <p>{{ vm.profileErrorMessage }}</p>
+          <a routerLink="/profile" class="btn-primary" id="btn-back-own-profile">Return to My Profile</a>
+        </div>
+      } @else {
+        <!-- Profile Hero Card -->
+        <section class="hero-card">
+          <div class="hero-avatar">{{ vm.userInitial }}</div>
+          <div class="hero-content">
+            <div class="hero-identity">
+              <h2 class="hero-name">{{ vm.profile?.fullName || vm.profile?.userName || 'User' }}</h2>
+              <span class="hero-username">&#64;{{ vm.profile?.userName }}</span>
+              @if (!vm.isOwnProfile) {
+                <span class="admin-view-badge">Admin view</span>
               }
             </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Settings Expandable List Items -->
-      <div class="settings-list" role="region" aria-label="Profile settings">
-        <!-- Section 1: Personal Information -->
-        <section class="settings-item" [class.is-expanded]="isSectionExpanded('personal')">
-          <button
-            type="button"
-            class="item-header"
-            (click)="toggleSection('personal')"
-            [attr.aria-expanded]="isSectionExpanded('personal')"
-            aria-controls="panel-personal"
-            id="btn-toggle-personal"
-          >
-            <div class="item-header-left">
-              <div class="item-icon-wrapper user-icon" aria-hidden="true">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
+            <div class="hero-meta">
+              <span class="meta-item">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
                 </svg>
-              </div>
-              <div class="item-header-text">
-                <h2 class="item-title">Personal Information</h2>
-                <p class="item-desc">Update your display name and public username.</p>
-              </div>
-            </div>
-
-            <div class="item-header-right">
-              <svg class="chevron-icon" [class.rotated]="isSectionExpanded('personal')" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </div>
-          </button>
-
-          <div
-            class="item-body"
-            [class.is-expanded]="isSectionExpanded('personal')"
-            id="panel-personal"
-            role="region"
-            aria-labelledby="btn-toggle-personal"
-          >
-            <div class="item-content">
-              <div class="item-inner">
-                <form [formGroup]="profileForm" (ngSubmit)="onSaveProfile()" class="form-schema">
-                  <div class="field-group">
-                    <label for="profile-email">Email Address</label>
-                    <div class="input-with-pill">
-                      <input
-                        id="profile-email"
-                        type="email"
-                        formControlName="email"
-                        placeholder="email@example.com"
-                        readonly
-                      />
-                      <span
-                        class="status-pill"
-                        [class.status-verified]="profile()?.emailConfirmed"
-                        [class.status-unverified]="!profile()?.emailConfirmed"
-                      >
-                        {{ profile()?.emailConfirmed ? 'Verified' : 'Unverified' }}
-                      </span>
-                    </div>
-                    @if (!profile()?.emailConfirmed && isOwnProfile()) {
-                      <div class="email-confirm-action">
-                        <button
-                          type="button"
-                          class="btn-secondary btn-sm"
-                          (click)="onConfirmEmailMock()"
-                          [disabled]="confirmingEmail()"
-                          id="btn-confirm-email"
-                        >
-                          @if (confirmingEmail()) {
-                            <span class="btn-spinner"></span>
-                            <span>Confirming...</span>
-                          } @else {
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="14"
-                              height="14"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              stroke-width="2"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            >
-                              <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                            <span>Confirm Email</span>
-                          }
-                        </button>
-                        <span class="field-hint">Click to confirm your email (mock).</span>
-                      </div>
-                    } @else {
-                      <span class="field-hint">Email is managed by your account administrator.</span>
-                    }
-                  </div>
-
-                  <div class="field-group">
-                    <label for="profile-username">Username</label>
-                    <input
-                      id="profile-username"
-                      type="text"
-                      formControlName="userName"
-                      placeholder="Username"
-                    />
-                    @if (profileForm.get('userName')?.hasError('required') && profileForm.get('userName')?.touched) {
-                      <span class="field-error">Username is required</span>
-                    }
-                    @if (profileForm.get('userName')?.hasError('minlength') && profileForm.get('userName')?.touched) {
-                      <span class="field-error">Username must be at least 3 characters</span>
-                    }
-                  </div>
-
-                  <div class="field-group">
-                    <label for="profile-fullname">Full Name</label>
-                    <input
-                      id="profile-fullname"
-                      type="text"
-                      formControlName="fullName"
-                      placeholder="First and last name"
-                    />
-                  </div>
-
-                  <div class="form-actions">
-                    <button
-                      type="submit"
-                      class="btn-primary"
-                      [disabled]="savingProfile()"
-                      id="btn-save-profile"
-                    >
-                      @if (savingProfile()) {
-                        <span class="btn-spinner"></span>
-                        <span>Saving...</span>
-                      } @else {
-                        <span>Save changes</span>
-                      }
-                    </button>
-                    <button
-                      type="button"
-                      class="btn-secondary"
-                      (click)="onDiscardProfile()"
-                      [disabled]="savingProfile()"
-                      id="btn-discard-profile"
-                    >
-                      Discard
-                    </button>
-                  </div>
-                </form>
+                <span>{{ vm.profile?.email }}</span>
+                <span
+                  class="status-pill"
+                  [class.status-verified]="vm.profile?.emailConfirmed"
+                  [class.status-unverified]="!vm.profile?.emailConfirmed"
+                >
+                  {{ vm.profile?.emailConfirmed ? 'Verified' : 'Unverified' }}
+                </span>
+              </span>
+              <div class="roles-list">
+                @for (role of vm.userRoles; track role) {
+                  <span class="role-badge">{{ role }}</span>
+                }
               </div>
             </div>
           </div>
         </section>
 
-        <!-- Section 2: Security & Password -->
-        <section class="settings-item" [class.is-expanded]="isSectionExpanded('security')">
-          <button
-            type="button"
-            class="item-header"
-            (click)="toggleSection('security')"
-            [attr.aria-expanded]="isSectionExpanded('security')"
-            aria-controls="panel-security"
-            id="btn-toggle-security"
-          >
-            <div class="item-header-left">
-              <div class="item-icon-wrapper security-icon" aria-hidden="true">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        <!-- Settings Expandable List Items -->
+        <div class="settings-list" role="region" aria-label="Profile settings">
+          <!-- Section 1: Personal Information -->
+          <section class="settings-item" [class.is-expanded]="isSectionExpanded('personal')">
+            <button
+              type="button"
+              class="item-header"
+              (click)="toggleSection('personal')"
+              [attr.aria-expanded]="isSectionExpanded('personal')"
+              aria-controls="panel-personal"
+              id="btn-toggle-personal"
+            >
+              <div class="item-header-left">
+                <div class="item-icon-wrapper user-icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </div>
+                <div class="item-header-text">
+                  <h2 class="item-title">Personal Information</h2>
+                  <p class="item-desc">Update your display name and public username.</p>
+                </div>
+              </div>
+
+              <div class="item-header-right">
+                <svg class="chevron-icon" [class.rotated]="isSectionExpanded('personal')" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               </div>
-              <div class="item-header-text">
-                <h2 class="item-title">Security</h2>
-                <p class="item-desc">Change your password to keep your account secure.</p>
-              </div>
-            </div>
+            </button>
 
-            <div class="item-header-right">
-              <svg class="chevron-icon" [class.rotated]="isSectionExpanded('security')" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </div>
-          </button>
-
-          <div
-            class="item-body"
-            [class.is-expanded]="isSectionExpanded('security')"
-            id="panel-security"
-            role="region"
-            aria-labelledby="btn-toggle-security"
-          >
-            <div class="item-content">
-              <div class="item-inner">
-                @if (!isOwnProfile()) {
-                  <div class="security-external-notice">
-                    <p>Password updates can only be executed by the account owner.</p>
-                  </div>
-                } @else {
-                  <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" class="form-schema">
+            <div
+              class="item-body"
+              [class.is-expanded]="isSectionExpanded('personal')"
+              id="panel-personal"
+              role="region"
+              aria-labelledby="btn-toggle-personal"
+            >
+              <div class="item-content">
+                <div class="item-inner">
+                  <form [formGroup]="profileForm" (ngSubmit)="onSaveProfile()" class="form-schema">
                     <div class="field-group">
-                      <label for="current-password">Current Password</label>
-                      <div
-                        class="input-wrapper"
-                        [class.error]="passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched"
-                      >
-                        <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                          <rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
-                          <path d="M5 7V5C5 3.34 6.34 2 8 2C9.66 2 11 3.34 11 5V7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                        </svg>
+                      <label for="profile-email">Email Address</label>
+                      <div class="input-with-pill">
                         <input
-                          id="current-password"
-                          [type]="showCurrentPassword() ? 'text' : 'password'"
-                          formControlName="currentPassword"
-                          placeholder="Enter current password"
-                          autocomplete="current-password"
+                          id="profile-email"
+                          type="email"
+                          formControlName="email"
+                          placeholder="email@example.com"
+                          readonly
                         />
-                        <button
-                          type="button"
-                          class="toggle-password"
-                          (click)="toggleCurrentPassword()"
-                          tabindex="-1"
-                          aria-label="Toggle current password visibility"
+                        <span
+                          class="status-pill"
+                          [class.status-verified]="vm.profile?.emailConfirmed"
+                          [class.status-unverified]="!vm.profile?.emailConfirmed"
                         >
-                          @if (showCurrentPassword()) {
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                              <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
-                              <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
-                              <path d="M3 13L13 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                            </svg>
-                          } @else {
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                              <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
-                              <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
-                            </svg>
-                          }
-                        </button>
+                          {{ vm.profile?.emailConfirmed ? 'Verified' : 'Unverified' }}
+                        </span>
                       </div>
-                      @if (passwordForm.get('currentPassword')?.hasError('required') && passwordForm.get('currentPassword')?.touched && !passwordForm.get('currentPassword')?.hasError('serverError')) {
-                        <span class="field-error">Current password is required</span>
+                      @if (!vm.profile?.emailConfirmed && vm.isOwnProfile) {
+                        <div class="email-confirm-action">
+                          <button
+                            type="button"
+                            class="btn-secondary btn-sm"
+                            (click)="onConfirmEmailMock()"
+                            [disabled]="vm.confirmingEmail"
+                            id="btn-confirm-email"
+                          >
+                            @if (vm.confirmingEmail) {
+                              <span class="btn-spinner"></span>
+                              <span>Confirming...</span>
+                            } @else {
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                              >
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                              </svg>
+                              <span>Confirm Email</span>
+                            }
+                          </button>
+                          <span class="field-hint">Click to confirm your email (mock).</span>
+                        </div>
+                      } @else {
+                        <span class="field-hint">Email is managed by your account administrator.</span>
                       }
                     </div>
 
                     <div class="field-group">
-                      <label for="new-password">New Password</label>
-                      <div
-                        class="input-wrapper"
-                        [class.error]="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched"
-                      >
-                        <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                          <rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
-                          <path d="M5 7V5C5 3.34 6.34 2 8 2C9.66 2 11 3.34 11 5V7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                        </svg>
-                        <input
-                          id="new-password"
-                          [type]="showNewPassword() ? 'text' : 'password'"
-                          formControlName="newPassword"
-                          placeholder="Min. 6 characters"
-                          autocomplete="new-password"
-                        />
-                        <button
-                          type="button"
-                          class="toggle-password"
-                          (click)="toggleNewPassword()"
-                          tabindex="-1"
-                          aria-label="Toggle new password visibility"
-                        >
-                          @if (showNewPassword()) {
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                              <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
-                              <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
-                              <path d="M3 13L13 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                            </svg>
-                          } @else {
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                              <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
-                              <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
-                            </svg>
-                          }
-                        </button>
-                      </div>
-                      @if (passwordForm.get('newPassword')?.hasError('required') && passwordForm.get('newPassword')?.touched && !passwordForm.get('newPassword')?.hasError('serverError')) {
-                        <span class="field-error">New password is required</span>
+                      <label for="profile-username">Username</label>
+                      <input
+                        id="profile-username"
+                        type="text"
+                        formControlName="userName"
+                        placeholder="Username"
+                      />
+                      @if (profileForm.get('userName')?.hasError('required') && profileForm.get('userName')?.touched) {
+                        <span class="field-error">Username is required</span>
                       }
-                      @if (passwordForm.get('newPassword')?.hasError('minlength') && passwordForm.get('newPassword')?.touched && !passwordForm.get('newPassword')?.hasError('serverError')) {
-                        <span class="field-error">New password must be at least 6 characters</span>
+                      @if (profileForm.get('userName')?.hasError('minlength') && profileForm.get('userName')?.touched) {
+                        <span class="field-error">Username must be at least 3 characters</span>
                       }
                     </div>
 
                     <div class="field-group">
-                      <label for="confirm-new-password">Confirm New Password</label>
-                      <div
-                        class="input-wrapper"
-                        [class.error]="
-                          (passwordForm.get('confirmNewPassword')?.invalid || passwordForm.hasError('passwordMismatch')) &&
-                          passwordForm.get('confirmNewPassword')?.touched
-                        "
-                      >
-                        <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                          <rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
-                          <path d="M5 7V5C5 3.34 6.34 2 8 2C9.66 2 11 3.34 11 5V7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                        </svg>
-                        <input
-                          id="confirm-new-password"
-                          [type]="showConfirmNewPassword() ? 'text' : 'password'"
-                          formControlName="confirmNewPassword"
-                          placeholder="Re-enter new password"
-                          autocomplete="new-password"
-                        />
-                        <button
-                          type="button"
-                          class="toggle-password"
-                          (click)="toggleConfirmNewPassword()"
-                          tabindex="-1"
-                          aria-label="Toggle confirm new password visibility"
-                        >
-                          @if (showConfirmNewPassword()) {
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                              <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
-                              <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
-                              <path d="M3 13L13 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                            </svg>
-                          } @else {
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                              <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
-                              <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
-                            </svg>
-                          }
-                        </button>
-                      </div>
-                      @if (passwordForm.get('confirmNewPassword')?.hasError('required') && passwordForm.get('confirmNewPassword')?.touched && !passwordForm.get('confirmNewPassword')?.hasError('serverError')) {
-                        <span class="field-error">Please confirm your new password</span>
-                      } @else if (passwordForm.hasError('passwordMismatch') && passwordForm.get('confirmNewPassword')?.touched) {
-                        <span class="field-error">Passwords do not match</span>
-                      }
+                      <label for="profile-fullname">Full Name</label>
+                      <input
+                        id="profile-fullname"
+                        type="text"
+                        formControlName="fullName"
+                        placeholder="First and last name"
+                      />
                     </div>
 
                     <div class="form-actions">
                       <button
                         type="submit"
                         class="btn-primary"
-                        [disabled]="changingPassword()"
-                        id="btn-change-password"
+                        [disabled]="vm.savingProfile"
+                        id="btn-save-profile"
                       >
-                        @if (changingPassword()) {
+                        @if (vm.savingProfile) {
                           <span class="btn-spinner"></span>
-                          <span>Updating...</span>
+                          <span>Saving...</span>
                         } @else {
-                          <span>Update password</span>
+                          <span>Save changes</span>
                         }
                       </button>
                       <button
                         type="button"
                         class="btn-secondary"
-                        (click)="onDiscardPassword()"
-                        [disabled]="changingPassword()"
-                        id="btn-discard-password"
+                        (click)="onDiscardProfile()"
+                        [disabled]="vm.savingProfile"
+                        id="btn-discard-profile"
                       >
                         Discard
                       </button>
                     </div>
                   </form>
-                }
-
-                <div class="security-overview">
-                  <h3 class="overview-title">Authentication & Access Safeguards</h3>
-                  <div class="meta-grid">
-                    <div class="meta-cell">
-                      <span class="cell-label">Two-Factor Authentication</span>
-                      <span class="cell-value">
-                        <span
-                          class="status-pill"
-                          [class.status-verified]="profile()?.twoFactorEnabled"
-                          [class.status-disabled]="!profile()?.twoFactorEnabled"
-                        >
-                          {{ profile()?.twoFactorEnabled ? 'Enabled' : 'Disabled' }}
-                        </span>
-                      </span>
-                    </div>
-                    <div class="meta-cell">
-                      <span class="cell-label">Account Lockout Policy</span>
-                      <span class="cell-value">
-                        <span
-                          class="status-pill"
-                          [class.status-verified]="profile()?.lockoutEnabled"
-                          [class.status-disabled]="!profile()?.lockoutEnabled"
-                        >
-                          {{ profile()?.lockoutEnabled ? 'Enabled' : 'Disabled' }}
-                        </span>
-                      </span>
-                    </div>
-                    <div class="meta-cell">
-                      <span class="cell-label">Active Lockout Expiration</span>
-                      <span class="cell-value">
-                        {{ profile()?.lockoutEnd ? (profile()?.lockoutEnd | date:'medium') : 'None (Active)' }}
-                      </span>
-                    </div>
-                    <div class="meta-cell">
-                      <span class="cell-label">Failed Access Attempts</span>
-                      <span class="cell-value">
-                        {{ profile()?.accessFailedCount ?? 0 }}
-                      </span>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <!-- Section 3: Account Metadata & Session Info -->
-        <section class="settings-item" [class.is-expanded]="isSectionExpanded('metadata')">
-          <button
-            type="button"
-            class="item-header"
-            (click)="toggleSection('metadata')"
-            [attr.aria-expanded]="isSectionExpanded('metadata')"
-            aria-controls="panel-metadata"
-            id="btn-toggle-metadata"
-          >
-            <div class="item-header-left">
-              <div class="item-icon-wrapper metadata-icon" aria-hidden="true">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="16" x2="12" y2="12"></line>
-                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          <!-- Section 2: Security & Password -->
+          <section class="settings-item" [class.is-expanded]="isSectionExpanded('security')">
+            <button
+              type="button"
+              class="item-header"
+              (click)="toggleSection('security')"
+              [attr.aria-expanded]="isSectionExpanded('security')"
+              aria-controls="panel-security"
+              id="btn-toggle-security"
+            >
+              <div class="item-header-left">
+                <div class="item-icon-wrapper security-icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                </div>
+                <div class="item-header-text">
+                  <h2 class="item-title">Security</h2>
+                  <p class="item-desc">Change your password to keep your account secure.</p>
+                </div>
+              </div>
+
+              <div class="item-header-right">
+                <svg class="chevron-icon" [class.rotated]="isSectionExpanded('security')" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               </div>
-              <div class="item-header-text">
-                <h2 class="item-title">Account & Session Metadata</h2>
-                <p class="item-desc">Diagnostic and identity data associated with this account.</p>
-              </div>
-            </div>
+            </button>
 
-            <div class="item-header-right">
-              <svg class="chevron-icon" [class.rotated]="isSectionExpanded('metadata')" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </div>
-          </button>
-
-          <div
-            class="item-body"
-            [class.is-expanded]="isSectionExpanded('metadata')"
-            id="panel-metadata"
-            role="region"
-            aria-labelledby="btn-toggle-metadata"
-          >
-            <div class="item-content">
-              <div class="item-inner">
-                <div class="meta-grid">
-                  <div class="meta-cell">
-                    <span class="cell-label">User Identifier (UUID)</span>
-                    <code class="cell-value code">{{ userId() }}</code>
-                  </div>
-
-                  <div class="meta-cell">
-                    <span class="cell-label">Assigned Roles</span>
-                    <div class="cell-value roles-inline">
-                      @for (role of userRoles(); track role) {
-                        <span class="role-badge">{{ role }}</span>
-                      }
+            <div
+              class="item-body"
+              [class.is-expanded]="isSectionExpanded('security')"
+              id="panel-security"
+              role="region"
+              aria-labelledby="btn-toggle-security"
+            >
+              <div class="item-content">
+                <div class="item-inner">
+                  @if (!vm.isOwnProfile) {
+                    <div class="security-external-notice">
+                      <p>Password updates can only be executed by the account owner.</p>
                     </div>
-                  </div>
+                  } @else {
+                    <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" class="form-schema">
+                      <div class="field-group">
+                        <label for="current-password">Current Password</label>
+                        <div
+                          class="input-wrapper"
+                          [class.error]="passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched"
+                        >
+                          <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+                            <path d="M5 7V5C5 3.34 6.34 2 8 2C9.66 2 11 3.34 11 5V7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                          </svg>
+                          <input
+                            id="current-password"
+                            [type]="vm.showCurrentPassword ? 'text' : 'password'"
+                            formControlName="currentPassword"
+                            placeholder="Enter current password"
+                            autocomplete="current-password"
+                          />
+                          <button
+                            type="button"
+                            class="toggle-password"
+                            (click)="toggleCurrentPassword()"
+                            tabindex="-1"
+                            aria-label="Toggle current password visibility"
+                          >
+                            @if (vm.showCurrentPassword) {
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
+                                <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
+                                <path d="M3 13L13 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                              </svg>
+                            } @else {
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
+                                <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
+                              </svg>
+                            }
+                          </button>
+                        </div>
+                        @if (passwordForm.get('currentPassword')?.hasError('required') && passwordForm.get('currentPassword')?.touched && !passwordForm.get('currentPassword')?.hasError('serverError')) {
+                          <span class="field-error">Current password is required</span>
+                        }
+                      </div>
 
-                  <div class="meta-cell">
-                    <span class="cell-label">Email Verification</span>
-                    <span class="cell-value email-meta-value">
-                      <span
-                        class="status-pill"
-                        [class.status-verified]="profile()?.emailConfirmed"
-                        [class.status-unverified]="!profile()?.emailConfirmed"
-                      >
-                        {{ profile()?.emailConfirmed ? 'Verified' : 'Unconfirmed' }}
-                      </span>
-                    </span>
-                  </div>
+                      <div class="field-group">
+                        <label for="new-password">New Password</label>
+                        <div
+                          class="input-wrapper"
+                          [class.error]="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched"
+                        >
+                          <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+                            <path d="M5 7V5C5 3.34 6.34 2 8 2C9.66 2 11 3.34 11 5V7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                          </svg>
+                          <input
+                            id="new-password"
+                            [type]="vm.showNewPassword ? 'text' : 'password'"
+                            formControlName="newPassword"
+                            placeholder="Min. 6 characters"
+                            autocomplete="new-password"
+                          />
+                          <button
+                            type="button"
+                            class="toggle-password"
+                            (click)="toggleNewPassword()"
+                            tabindex="-1"
+                            aria-label="Toggle new password visibility"
+                          >
+                            @if (vm.showNewPassword) {
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
+                                <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
+                                <path d="M3 13L13 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                              </svg>
+                            } @else {
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
+                                <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
+                              </svg>
+                            }
+                          </button>
+                        </div>
+                        @if (passwordForm.get('newPassword')?.hasError('required') && passwordForm.get('newPassword')?.touched && !passwordForm.get('newPassword')?.hasError('serverError')) {
+                          <span class="field-error">New password is required</span>
+                        }
+                        @if (passwordForm.get('newPassword')?.hasError('minlength') && passwordForm.get('newPassword')?.touched && !passwordForm.get('newPassword')?.hasError('serverError')) {
+                          <span class="field-error">New password must be at least 6 characters</span>
+                        }
+                      </div>
 
-                  <div class="meta-cell">
-                    <span class="cell-label">Session Issued At</span>
-                    <span class="cell-value">{{ tokenIssuedAt() }}</span>
-                  </div>
+                      <div class="field-group">
+                        <label for="confirm-new-password">Confirm New Password</label>
+                        <div
+                          class="input-wrapper"
+                          [class.error]="
+                            (passwordForm.get('confirmNewPassword')?.invalid || passwordForm.hasError('passwordMismatch')) &&
+                            passwordForm.get('confirmNewPassword')?.touched
+                          "
+                        >
+                          <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+                            <path d="M5 7V5C5 3.34 6.34 2 8 2C9.66 2 11 3.34 11 5V7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                          </svg>
+                          <input
+                            id="confirm-new-password"
+                            [type]="vm.showConfirmNewPassword ? 'text' : 'password'"
+                            formControlName="confirmNewPassword"
+                            placeholder="Confirm your password"
+                            autocomplete="new-password"
+                          />
+                          <button
+                            type="button"
+                            class="toggle-password"
+                            (click)="toggleConfirmNewPassword()"
+                            tabindex="-1"
+                            aria-label="Toggle confirm new password visibility"
+                          >
+                            @if (vm.showConfirmNewPassword) {
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
+                                <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
+                                <path d="M3 13L13 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                              </svg>
+                            } @else {
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M2 8C2 8 4.5 3 8 3C11.5 3 14 8 14 8C14 8 11.5 13 8 13C4.5 13 2 8 2 8Z" stroke="currentColor" stroke-width="1.2"/>
+                                <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
+                              </svg>
+                            }
+                          </button>
+                        </div>
+                        @if (passwordForm.get('confirmNewPassword')?.hasError('required') && passwordForm.get('confirmNewPassword')?.touched && !passwordForm.get('confirmNewPassword')?.hasError('serverError')) {
+                          <span class="field-error">Please confirm your new password</span>
+                        } @else if (passwordForm.hasError('passwordMismatch') && passwordForm.get('confirmNewPassword')?.touched) {
+                          <span class="field-error">Passwords do not match</span>
+                        }
+                      </div>
 
-                  <div class="meta-cell">
-                    <span class="cell-label">Session Token Expires At</span>
-                    <span class="cell-value">{{ tokenExpiresAt() }}</span>
+                      <div class="form-actions">
+                        <button
+                          type="submit"
+                          class="btn-primary"
+                          [disabled]="vm.changingPassword"
+                          id="btn-change-password"
+                        >
+                          @if (vm.changingPassword) {
+                            <span class="btn-spinner"></span>
+                            <span>Updating...</span>
+                          } @else {
+                            <span>Update password</span>
+                          }
+                        </button>
+                        <button
+                          type="button"
+                          class="btn-secondary"
+                          (click)="onDiscardPassword()"
+                          [disabled]="vm.changingPassword"
+                          id="btn-discard-password"
+                        >
+                          Discard
+                        </button>
+                      </div>
+                    </form>
+                  }
+
+                  <div class="security-overview">
+                    <h3 class="overview-title">Authentication & Access Safeguards</h3>
+                    <div class="meta-grid">
+                      <div class="meta-cell">
+                        <span class="cell-label">Two-Factor Authentication</span>
+                        <span class="cell-value">
+                          <span
+                            class="status-pill"
+                            [class.status-verified]="vm.profile?.twoFactorEnabled"
+                            [class.status-disabled]="!vm.profile?.twoFactorEnabled"
+                          >
+                            {{ vm.profile?.twoFactorEnabled ? 'Enabled' : 'Disabled' }}
+                          </span>
+                        </span>
+                      </div>
+                      <div class="meta-cell">
+                        <span class="cell-label">Account Lockout Policy</span>
+                        <span class="cell-value">
+                          <span
+                            class="status-pill"
+                            [class.status-verified]="vm.profile?.lockoutEnabled"
+                            [class.status-disabled]="!vm.profile?.lockoutEnabled"
+                          >
+                            {{ vm.profile?.lockoutEnabled ? 'Enabled' : 'Disabled' }}
+                          </span>
+                        </span>
+                      </div>
+                      <div class="meta-cell">
+                        <span class="cell-label">Active Lockout Expiration</span>
+                        <span class="cell-value">
+                          {{ vm.lockoutEndFormatted }}
+                        </span>
+                      </div>
+                      <div class="meta-cell">
+                        <span class="cell-label">Failed Access Attempts</span>
+                        <span class="cell-value">
+                          {{ vm.profile?.accessFailedCount ?? 0 }}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
-      </div>
+          </section>
+
+          <!-- Section 3: Account Metadata & Session Info -->
+          <section class="settings-item" [class.is-expanded]="isSectionExpanded('metadata')">
+            <button
+              type="button"
+              class="item-header"
+              (click)="toggleSection('metadata')"
+              [attr.aria-expanded]="isSectionExpanded('metadata')"
+              aria-controls="panel-metadata"
+              id="btn-toggle-metadata"
+            >
+              <div class="item-header-left">
+                <div class="item-icon-wrapper metadata-icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                  </svg>
+                </div>
+                <div class="item-header-text">
+                  <h2 class="item-title">Account & Session Metadata</h2>
+                  <p class="item-desc">Diagnostic and identity data associated with this account.</p>
+                </div>
+              </div>
+
+              <div class="item-header-right">
+                <svg class="chevron-icon" [class.rotated]="isSectionExpanded('metadata')" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </button>
+
+            <div
+              class="item-body"
+              [class.is-expanded]="isSectionExpanded('metadata')"
+              id="panel-metadata"
+              role="region"
+              aria-labelledby="btn-toggle-metadata"
+            >
+              <div class="item-content">
+                <div class="item-inner">
+                  <div class="meta-grid">
+                    <div class="meta-cell">
+                      <span class="cell-label">User Identifier (UUID)</span>
+                      <code class="cell-value code">{{ vm.userId }}</code>
+                    </div>
+
+                    <div class="meta-cell">
+                      <span class="cell-label">Assigned Roles</span>
+                      <div class="cell-value roles-inline">
+                        @for (role of vm.userRoles; track role) {
+                          <span class="role-badge">{{ role }}</span>
+                        }
+                      </div>
+                    </div>
+
+                    <div class="meta-cell">
+                      <span class="cell-label">Email Verification</span>
+                      <span class="cell-value email-meta-value">
+                        <span
+                          class="status-pill"
+                          [class.status-verified]="vm.profile?.emailConfirmed"
+                          [class.status-unverified]="!vm.profile?.emailConfirmed"
+                        >
+                          {{ vm.profile?.emailConfirmed ? 'Verified' : 'Unconfirmed' }}
+                        </span>
+                      </span>
+                    </div>
+
+                    <div class="meta-cell">
+                      <span class="cell-label">Session Issued At</span>
+                      <span class="cell-value">{{ vm.tokenIssuedAt }}</span>
+                    </div>
+
+                    <div class="meta-cell">
+                      <span class="cell-label">Session Token Expires At</span>
+                      <span class="cell-value">{{ vm.tokenExpiresAt }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      }
     }
   </main>
 </div>

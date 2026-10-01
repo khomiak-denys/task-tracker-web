@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -10,12 +10,64 @@ import {
 } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
+import { BehaviorSubject, Observable, map } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { UserService } from '../../core/services/user.service';
 import { UserProfile } from '../../core/models/user.models';
 import { AutoTrimDirective } from '../../shared/directives/auto-trim.directive';
 import { trimFormGroup } from '../../shared/utils/form.utils';
+
+export interface ProfileState {
+  readonly loading: boolean;
+  readonly savingProfile: boolean;
+  readonly changingPassword: boolean;
+  readonly confirmingEmail: boolean;
+  readonly profileSuccessMessage: string | null;
+  readonly profileErrorMessage: string | null;
+  readonly passwordSuccessMessage: string | null;
+  readonly passwordErrorMessage: string | null;
+  readonly profile: UserProfile | null;
+  readonly routeUserId: string | null;
+  readonly showCurrentPassword: boolean;
+  readonly showNewPassword: boolean;
+  readonly showConfirmNewPassword: boolean;
+  readonly expandedSections: Record<string, boolean>;
+}
+
+export interface ProfileViewState extends ProfileState {
+  readonly currentSessionUserId: string;
+  readonly targetUserId: string;
+  readonly isOwnProfile: boolean;
+  readonly userInitial: string;
+  readonly userId: string;
+  readonly userRoles: string[];
+  readonly tokenIssuedAt: string;
+  readonly tokenExpiresAt: string;
+  readonly lockoutEndFormatted: string;
+}
+
+const initialProfileState: ProfileState = {
+  loading: true,
+  savingProfile: false,
+  changingPassword: false,
+  confirmingEmail: false,
+  profileSuccessMessage: null,
+  profileErrorMessage: null,
+  passwordSuccessMessage: null,
+  passwordErrorMessage: null,
+  profile: null,
+  routeUserId: null,
+  showCurrentPassword: false,
+  showNewPassword: false,
+  showConfirmNewPassword: false,
+  expandedSections: {
+    personal: false,
+    security: false,
+    metadata: false,
+  },
+};
 
 @Component({
   selector: 'app-profile',
@@ -26,116 +78,20 @@ import { trimFormGroup } from '../../shared/utils/form.utils';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileComponent implements OnInit {
-  protected readonly loading = signal(true);
-  protected readonly savingProfile = signal(false);
-  protected readonly changingPassword = signal(false);
-  protected readonly confirmingEmail = signal(false);
+  private readonly stateSubject = new BehaviorSubject<ProfileState>(initialProfileState);
+  readonly state$: Observable<ProfileState> = this.stateSubject.asObservable();
+  readonly vm$: Observable<ProfileViewState> = this.state$.pipe(
+    map((state) => this.computeViewState(state)),
+  );
 
-  protected readonly profileSuccessMessage = signal<string | null>(null);
-  protected readonly profileErrorMessage = signal<string | null>(null);
-
-  protected readonly passwordSuccessMessage = signal<string | null>(null);
-  protected readonly passwordErrorMessage = signal<string | null>(null);
-
-  protected readonly profile = signal<UserProfile | null>(null);
-  protected readonly routeUserId = signal<string | null>(null);
-
-  protected readonly showCurrentPassword = signal(false);
-  protected readonly showNewPassword = signal(false);
-  protected readonly showConfirmNewPassword = signal(false);
-
-  protected readonly expandedSections = signal<Record<string, boolean>>({
-    personal: false,
-    security: false,
-    metadata: false,
-  });
+  get snapshot(): ProfileViewState {
+    return this.computeViewState(this.stateSubject.value);
+  }
 
   protected readonly profileForm: FormGroup;
   protected readonly passwordForm: FormGroup;
 
-  protected isSectionExpanded(section: string): boolean {
-    return !!this.expandedSections()[section];
-  }
-
-  protected toggleSection(section: string): void {
-    this.expandedSections.update((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  }
-
-  protected expandSection(section: string): void {
-    this.expandedSections.update((prev) => ({
-      ...prev,
-      [section]: true,
-    }));
-  }
-
-  protected readonly currentSessionUserId = computed(() => {
-    const tokenUid = this.authService.currentUserId();
-    if (tokenUid) return tokenUid;
-    const tokenUser = this.authService.currentUser();
-    if (!tokenUser) return '';
-    return (
-      tokenUser.sub ||
-      (tokenUser['nameid'] as string) ||
-      (tokenUser['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] as string) ||
-      ''
-    );
-  });
-
-  protected readonly targetUserId = computed(() => {
-    return this.routeUserId() || this.currentSessionUserId();
-  });
-
-  protected readonly isOwnProfile = computed(() => {
-    const target = this.targetUserId();
-    const self = this.currentSessionUserId();
-    return !target || target === self;
-  });
-
-  protected readonly userInitial = computed(() => {
-    const prof = this.profile();
-    if (prof) {
-      const name = prof.fullName || prof.userName || prof.email;
-      return name.trim().charAt(0).toUpperCase() || '?';
-    }
-    const tokenUser = this.authService.currentUser();
-    if (tokenUser && this.isOwnProfile()) {
-      const name = tokenUser.unique_name || tokenUser.email || '';
-      return name.trim().charAt(0).toUpperCase() || '?';
-    }
-    return '?';
-  });
-
-  protected readonly userId = computed(() => {
-    const current = this.profile();
-    if (current?.id) return current.id;
-    return this.targetUserId();
-  });
-
-  protected readonly userRoles = computed(() => {
-    const prof = this.profile();
-    if (prof?.roles?.length) {
-      return prof.roles;
-    }
-    if (this.isOwnProfile()) {
-      const roleClaim = this.authService.currentUser()?.role;
-      if (Array.isArray(roleClaim)) return roleClaim;
-      if (typeof roleClaim === 'string' && roleClaim) return [roleClaim];
-    }
-    return ['User'];
-  });
-
-  protected readonly tokenIssuedAt = computed(() => {
-    const iat = this.authService.currentUser()?.iat;
-    return iat ? new Date(iat * 1000).toLocaleString() : 'N/A';
-  });
-
-  protected readonly tokenExpiresAt = computed(() => {
-    const exp = this.authService.currentUser()?.exp;
-    return exp ? new Date(exp * 1000).toLocaleString() : 'N/A';
-  });
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor(
     protected readonly authService: AuthService,
@@ -164,72 +120,108 @@ export class ProfileComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe((params) => {
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const id = params.get('id');
-      this.routeUserId.set(id);
+      this.updateState({ routeUserId: id });
       this.loadProfile();
     });
   }
 
-  protected loadProfile(): void {
-    const uid = this.targetUserId();
-    if (!uid) {
-      this.loading.set(false);
-      this.profileErrorMessage.set('No user ID found in session. Please sign in again.');
-      return;
-    }
+  protected isSectionExpanded(section: string): boolean {
+    return !!this.stateSubject.value.expandedSections[section];
+  }
 
-    this.loading.set(true);
-    this.profileErrorMessage.set(null);
-    this.userService.getProfile(uid).subscribe({
-      next: (data) => {
-        this.profile.set(data);
-        this.profileForm.patchValue({
-          email: data.email,
-          userName: data.userName,
-          fullName: data.fullName ?? '',
-        });
-        this.loading.set(false);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.loading.set(false);
-        if (err.status === 403) {
-          this.profileErrorMessage.set(
-            err.error?.detail ??
-              err.error?.message ??
-              'Access denied: You do not have permission to view this user profile.',
-          );
-        } else if (err.status === 404) {
-          this.profileErrorMessage.set('User profile not found.');
-        } else {
-          this.profileErrorMessage.set(
-            err.error?.detail ??
-              err.error?.message ??
-              `Failed to load profile (status ${err.status || 'network error'}).`,
-          );
-        }
+  protected toggleSection(section: string): void {
+    const prev = this.stateSubject.value.expandedSections;
+    this.updateState({
+      expandedSections: {
+        ...prev,
+        [section]: !prev[section],
       },
     });
   }
 
+  protected expandSection(section: string): void {
+    const prev = this.stateSubject.value.expandedSections;
+    this.updateState({
+      expandedSections: {
+        ...prev,
+        [section]: true,
+      },
+    });
+  }
+
+  protected loadProfile(): void {
+    const uid = this.snapshot.targetUserId;
+    if (!uid) {
+      this.updateState({
+        loading: false,
+        profileErrorMessage: 'No user ID found in session. Please sign in again.',
+      });
+      return;
+    }
+
+    this.updateState({ loading: true, profileErrorMessage: null });
+    this.userService
+      .getProfile(uid)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          this.updateState({
+            profile: data,
+            loading: false,
+          });
+          this.profileForm.patchValue({
+            email: data.email,
+            userName: data.userName,
+            fullName: data.fullName ?? '',
+          });
+        },
+        error: (err: HttpErrorResponse) => {
+          let errorMsg = `Failed to load profile (status ${err.status || 'network error'}).`;
+          if (err.status === 403) {
+            errorMsg =
+              err.error?.detail ??
+              err.error?.message ??
+              'Access denied: You do not have permission to view this user profile.';
+          } else if (err.status === 404) {
+            errorMsg = 'User profile not found.';
+          } else if (err.error?.detail || err.error?.message) {
+            errorMsg = err.error?.detail ?? err.error?.message;
+          }
+          this.updateState({
+            loading: false,
+            profileErrorMessage: errorMsg,
+          });
+        },
+      });
+  }
+
   protected onConfirmEmailMock(): void {
-    if (this.confirmingEmail()) return;
-    this.confirmingEmail.set(true);
-    this.profileErrorMessage.set(null);
-    this.profileSuccessMessage.set(null);
+    if (this.stateSubject.value.confirmingEmail) return;
+    this.updateState({
+      confirmingEmail: true,
+      profileErrorMessage: null,
+      profileSuccessMessage: null,
+    });
 
     setTimeout(() => {
-      this.confirmingEmail.set(false);
-      this.profile.update((prev) => (prev ? { ...prev, emailConfirmed: true } : prev));
-      this.profileSuccessMessage.set('Email confirmed successfully! (Mocked)');
+      const current = this.stateSubject.value.profile;
+      this.updateState({
+        confirmingEmail: false,
+        profile: current ? { ...current, emailConfirmed: true } : current,
+        profileSuccessMessage: 'Email confirmed successfully! (Mocked)',
+      });
       this.notificationService.success('Email confirmed successfully! (Mocked)');
       this.expandSection('personal');
     }, 700);
   }
 
   protected onSaveProfile(): void {
-    this.profileSuccessMessage.set(null);
-    this.profileErrorMessage.set(null);
+    this.updateState({
+      profileSuccessMessage: null,
+      profileErrorMessage: null,
+    });
 
     trimFormGroup(this.profileForm);
 
@@ -239,38 +231,44 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    const uid = this.userId();
+    const uid = this.snapshot.userId;
     if (!uid) return;
 
-    this.savingProfile.set(true);
+    this.updateState({ savingProfile: true });
     const { userName, fullName } = this.profileForm.getRawValue();
     const cleanUserName = typeof userName === 'string' ? userName.trim() : userName;
     const cleanFullName = typeof fullName === 'string' && fullName.trim() ? fullName.trim() : null;
 
-    this.userService.updateProfile(uid, { userName: cleanUserName, fullName: cleanFullName }).subscribe({
-      next: () => {
-        this.savingProfile.set(false);
-        this.profileSuccessMessage.set('Profile updated successfully.');
-        this.notificationService.success('Profile updated successfully.');
-        this.expandSection('personal');
-        const current = this.profile();
-        if (current) {
-          this.profile.set({ ...current, userName: cleanUserName, fullName: cleanFullName });
-        }
-      },
-      error: (err: HttpErrorResponse) => {
-        this.savingProfile.set(false);
-        this.profileErrorMessage.set(
-          err.error?.message ?? 'Failed to update profile. Please try again.',
-        );
-        this.expandSection('personal');
-      },
-    });
+    this.userService
+      .updateProfile(uid, { userName: cleanUserName, fullName: cleanFullName })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          const current = this.stateSubject.value.profile;
+          this.updateState({
+            savingProfile: false,
+            profileSuccessMessage: 'Profile updated successfully.',
+            profile: current ? { ...current, userName: cleanUserName, fullName: cleanFullName } : null,
+          });
+          this.notificationService.success('Profile updated successfully.');
+          this.expandSection('personal');
+        },
+        error: (err: HttpErrorResponse) => {
+          this.updateState({
+            savingProfile: false,
+            profileErrorMessage:
+              err.error?.message ?? 'Failed to update profile. Please try again.',
+          });
+          this.expandSection('personal');
+        },
+      });
   }
 
   protected onChangePassword(): void {
-    this.passwordSuccessMessage.set(null);
-    this.passwordErrorMessage.set(null);
+    this.updateState({
+      passwordSuccessMessage: null,
+      passwordErrorMessage: null,
+    });
 
     if (this.passwordForm.invalid) {
       this.passwordForm.markAllAsTouched();
@@ -278,47 +276,59 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    const uid = this.userId();
+    const uid = this.snapshot.userId;
     if (!uid) return;
 
-    this.changingPassword.set(true);
+    this.updateState({ changingPassword: true });
     const { currentPassword, newPassword } = this.passwordForm.value;
 
-    this.userService.changePassword(uid, { currentPassword, newPassword }).subscribe({
-      next: () => {
-        this.changingPassword.set(false);
-        this.passwordSuccessMessage.set('Password changed successfully.');
-        this.notificationService.success('Password changed successfully.');
-        this.expandSection('security');
-        this.passwordForm.reset();
-      },
-      error: (err: HttpErrorResponse) => {
-        this.changingPassword.set(false);
-        this.passwordErrorMessage.set(
-          err.error?.message ?? 'Failed to change password. Verify your current password.',
-        );
-        this.expandSection('security');
-      },
-    });
+    this.userService
+      .changePassword(uid, { currentPassword, newPassword })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.updateState({
+            changingPassword: false,
+            passwordSuccessMessage: 'Password changed successfully.',
+          });
+          this.notificationService.success('Password changed successfully.');
+          this.expandSection('security');
+          this.passwordForm.reset();
+        },
+        error: (err: HttpErrorResponse) => {
+          this.updateState({
+            changingPassword: false,
+            passwordErrorMessage:
+              err.error?.message ?? 'Failed to change password. Verify your current password.',
+          });
+          this.expandSection('security');
+        },
+      });
   }
 
   protected onDiscardProfile(): void {
-    const prof = this.profile();
+    const prof = this.stateSubject.value.profile;
     this.profileForm.reset({
       email: prof?.email ?? '',
       userName: prof?.userName ?? '',
       fullName: prof?.fullName ?? '',
     });
-    this.profileErrorMessage.set(null);
-    this.profileSuccessMessage.set(null);
-    this.expandedSections.update((prev) => ({ ...prev, personal: false }));
+    const prevSections = this.stateSubject.value.expandedSections;
+    this.updateState({
+      profileErrorMessage: null,
+      profileSuccessMessage: null,
+      expandedSections: { ...prevSections, personal: false },
+    });
   }
 
   protected onDiscardPassword(): void {
     this.passwordForm.reset();
-    this.passwordErrorMessage.set(null);
-    this.passwordSuccessMessage.set(null);
-    this.expandedSections.update((prev) => ({ ...prev, security: false }));
+    const prevSections = this.stateSubject.value.expandedSections;
+    this.updateState({
+      passwordErrorMessage: null,
+      passwordSuccessMessage: null,
+      expandedSections: { ...prevSections, security: false },
+    });
   }
 
   protected onLogout(): void {
@@ -327,15 +337,86 @@ export class ProfileComponent implements OnInit {
   }
 
   protected toggleCurrentPassword(): void {
-    this.showCurrentPassword.update((v) => !v);
+    this.updateState({ showCurrentPassword: !this.stateSubject.value.showCurrentPassword });
   }
 
   protected toggleNewPassword(): void {
-    this.showNewPassword.update((v) => !v);
+    this.updateState({ showNewPassword: !this.stateSubject.value.showNewPassword });
   }
 
   protected toggleConfirmNewPassword(): void {
-    this.showConfirmNewPassword.update((v) => !v);
+    this.updateState({ showConfirmNewPassword: !this.stateSubject.value.showConfirmNewPassword });
+  }
+
+  private computeViewState(state: ProfileState): ProfileViewState {
+    const tokenUser =
+      typeof this.authService?.currentUser === 'function' ? this.authService.currentUser() : null;
+    const tokenUid =
+      typeof this.authService?.currentUserId === 'function' ? this.authService.currentUserId() : null;
+
+    const currentSessionUserId =
+      tokenUid ||
+      tokenUser?.sub ||
+      (tokenUser?.['nameid'] as string) ||
+      (tokenUser?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] as string) ||
+      '';
+
+    const targetUserId = state.routeUserId || currentSessionUserId;
+    const isOwnProfile = !targetUserId || targetUserId === currentSessionUserId;
+
+    let userInitial = '?';
+    if (state.profile) {
+      const name = state.profile.fullName || state.profile.userName || state.profile.email;
+      userInitial = name.trim().charAt(0).toUpperCase() || '?';
+    } else if (tokenUser && isOwnProfile) {
+      const name = tokenUser.unique_name || tokenUser.email || '';
+      userInitial = name.trim().charAt(0).toUpperCase() || '?';
+    }
+
+    const userId = state.profile?.id || targetUserId;
+
+    let userRoles: string[] = ['User'];
+    if (state.profile?.roles?.length) {
+      userRoles = state.profile.roles;
+    } else if (isOwnProfile && tokenUser) {
+      const roleClaim = tokenUser.role;
+      if (Array.isArray(roleClaim)) {
+        userRoles = roleClaim;
+      } else if (typeof roleClaim === 'string' && roleClaim) {
+        userRoles = [roleClaim];
+      }
+    }
+
+    const iat = tokenUser?.iat;
+    const tokenIssuedAt = iat ? new Date(iat * 1000).toLocaleString() : 'N/A';
+
+    const exp = tokenUser?.exp;
+    const tokenExpiresAt = exp ? new Date(exp * 1000).toLocaleString() : 'N/A';
+
+    const lockoutEnd = state.profile?.lockoutEnd;
+    const lockoutEndFormatted = lockoutEnd
+      ? new Date(lockoutEnd).toLocaleString()
+      : 'None (Active)';
+
+    return {
+      ...state,
+      currentSessionUserId,
+      targetUserId,
+      isOwnProfile,
+      userInitial,
+      userId,
+      userRoles,
+      tokenIssuedAt,
+      tokenExpiresAt,
+      lockoutEndFormatted,
+    };
+  }
+
+  private updateState(partial: Partial<ProfileState>): void {
+    this.stateSubject.next({
+      ...this.stateSubject.value,
+      ...partial,
+    });
   }
 
   private passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
