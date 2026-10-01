@@ -1,4 +1,5 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
 import {
   NotificationOptions,
   NotificationType,
@@ -16,12 +17,18 @@ const DEFAULT_DURATIONS: Record<NotificationType, number> = {
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
-  private readonly notificationsSignal = signal<ToastNotification[]>([]);
+  private readonly notificationsSubject = new BehaviorSubject<ToastNotification[]>([]);
   private readonly queue: ToastNotification[] = [];
   private readonly timers = new Map<string, ReturnType<typeof setTimeout>>();
 
-  /** Read-only list of active toast notifications (max 3 visible simultaneously). */
-  readonly notifications = this.notificationsSignal.asReadonly();
+  /** Reactive stream of visible toast notifications (max 3 visible simultaneously). */
+  readonly notifications$: Observable<ToastNotification[]> =
+    this.notificationsSubject.asObservable();
+
+  /** Synchronous read of currently visible toast notifications. */
+  notifications(): ToastNotification[] {
+    return this.notificationsSubject.value;
+  }
 
   /**
    * Display a new notification toast, or queue it if 3 are already visible.
@@ -44,7 +51,7 @@ export class NotificationService {
       action: options?.action,
     };
 
-    if (this.notificationsSignal().length < MAX_VISIBLE_TOASTS) {
+    if (this.notificationsSubject.value.length < MAX_VISIBLE_TOASTS) {
       this.displayToast(notification);
     } else {
       this.queue.push(notification);
@@ -85,10 +92,10 @@ export class NotificationService {
     }
 
     // If visible, remove and promote next waiting toast from the queue
-    const wasVisible = this.notificationsSignal().some((n) => n.id === id);
+    const wasVisible = this.notificationsSubject.value.some((n) => n.id === id);
     if (wasVisible) {
-      this.notificationsSignal.update((current) =>
-        current.filter((n) => n.id !== id),
+      this.notificationsSubject.next(
+        this.notificationsSubject.value.filter((n) => n.id !== id),
       );
       this.processQueue();
     }
@@ -101,17 +108,17 @@ export class NotificationService {
     }
     this.timers.clear();
     this.queue.length = 0;
-    this.notificationsSignal.set([]);
+    this.notificationsSubject.next([]);
   }
 
   private displayToast(notification: ToastNotification): void {
-    this.notificationsSignal.update((current) => [...current, notification]);
+    this.notificationsSubject.next([...this.notificationsSubject.value, notification]);
     this.startTimer(notification);
   }
 
   private processQueue(): void {
     while (
-      this.notificationsSignal().length < MAX_VISIBLE_TOASTS &&
+      this.notificationsSubject.value.length < MAX_VISIBLE_TOASTS &&
       this.queue.length > 0
     ) {
       const nextToast = this.queue.shift();
