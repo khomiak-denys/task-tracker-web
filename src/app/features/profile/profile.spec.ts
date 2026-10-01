@@ -1,8 +1,8 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, provideRouter } from '@angular/router';
-import { of } from 'rxjs';
-import { signal } from '@angular/core';
+import { of, throwError } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ProfileComponent } from './profile';
 import { AuthService } from '../../core/services/auth.service';
 import { UserService } from '../../core/services/user.service';
@@ -30,16 +30,15 @@ describe('ProfileComponent', () => {
   };
 
   beforeEach(async () => {
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['currentUserId', 'currentUser'], {
-      currentUserId: signal('user-123'),
-      currentUser: signal({
-        sub: 'user-123',
-        email: 'john@example.com',
-        unique_name: 'john_doe',
-        role: 'User',
-        exp: 9999999999,
-        iat: 1000000000,
-      }),
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['currentUserId', 'currentUser', 'logout']);
+    authServiceSpy.currentUserId.and.returnValue('user-123');
+    authServiceSpy.currentUser.and.returnValue({
+      sub: 'user-123',
+      email: 'john@example.com',
+      unique_name: 'john_doe',
+      role: 'User',
+      exp: 9999999999,
+      iat: 1000000000,
     });
 
     userServiceSpy = jasmine.createSpyObj('UserService', [
@@ -73,13 +72,16 @@ describe('ProfileComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create and load profile on init', () => {
+  it('Init_Should_LoadProfileAndPopulateForm_When_ComponentInitializes', () => {
     expect(component).toBeTruthy();
     expect(userServiceSpy.getProfile).toHaveBeenCalledWith('user-123');
-    expect(component['profile']()).toEqual(mockProfile);
+    expect(component.snapshot.profile).toEqual(mockProfile);
+    expect(component.snapshot.loading).toBeFalse();
+    expect(component.snapshot.userInitial).toBe('J');
+    expect(component.snapshot.isOwnProfile).toBeTrue();
   });
 
-  it('should update profile when onSaveProfile is called with valid form', () => {
+  it('onSaveProfile_Should_UpdateProfileAndNotify_When_ValidFormSubmitted', () => {
     userServiceSpy.updateProfile.and.returnValue(of(void 0));
 
     component['profileForm'].patchValue({
@@ -93,10 +95,12 @@ describe('ProfileComponent', () => {
       fullName: 'Johnathan Doe',
       userName: 'john_doe',
     });
-    expect(notificationServiceSpy.success).toHaveBeenCalled();
+    expect(notificationServiceSpy.success).toHaveBeenCalledWith('Profile updated successfully.');
+    expect(component.snapshot.savingProfile).toBeFalse();
+    expect(component.snapshot.profileSuccessMessage).toBe('Profile updated successfully.');
   });
 
-  it('should change password when onChangePassword is called with valid form', () => {
+  it('onChangePassword_Should_ChangePasswordAndNotify_When_ValidFormSubmitted', () => {
     userServiceSpy.changePassword.and.returnValue(of(void 0));
 
     component['passwordForm'].setValue({
@@ -111,6 +115,81 @@ describe('ProfileComponent', () => {
       currentPassword: 'OldPassword123!',
       newPassword: 'NewPassword123!',
     });
-    expect(notificationServiceSpy.success).toHaveBeenCalled();
+    expect(notificationServiceSpy.success).toHaveBeenCalledWith('Password changed successfully.');
+    expect(component.snapshot.changingPassword).toBeFalse();
+    expect(component.snapshot.passwordSuccessMessage).toBe('Password changed successfully.');
   });
+
+  it('toggleSection_Should_ToggleExpandedState_When_Invoked', () => {
+    expect(component['isSectionExpanded']('personal')).toBeFalse();
+    component['toggleSection']('personal');
+    expect(component['isSectionExpanded']('personal')).toBeTrue();
+    component['toggleSection']('personal');
+    expect(component['isSectionExpanded']('personal')).toBeFalse();
+  });
+
+  it('expandSection_Should_SetSectionExpandedToTrue_When_Invoked', () => {
+    expect(component['isSectionExpanded']('security')).toBeFalse();
+    component['expandSection']('security');
+    expect(component['isSectionExpanded']('security')).toBeTrue();
+  });
+
+  it('togglePasswords_Should_ToggleVisibilityFlags_When_Invoked', () => {
+    expect(component.snapshot.showCurrentPassword).toBeFalse();
+    component['toggleCurrentPassword']();
+    expect(component.snapshot.showCurrentPassword).toBeTrue();
+
+    expect(component.snapshot.showNewPassword).toBeFalse();
+    component['toggleNewPassword']();
+    expect(component.snapshot.showNewPassword).toBeTrue();
+
+    expect(component.snapshot.showConfirmNewPassword).toBeFalse();
+    component['toggleConfirmNewPassword']();
+    expect(component.snapshot.showConfirmNewPassword).toBeTrue();
+  });
+
+  it('onDiscardProfile_Should_ResetFormToLoadedProfile_When_Invoked', () => {
+    component['profileForm'].patchValue({ fullName: 'Unsaved Name' });
+    component['onDiscardProfile']();
+
+    expect(component['profileForm'].get('fullName')?.value).toBe('John Doe');
+    expect(component['isSectionExpanded']('personal')).toBeFalse();
+  });
+
+  it('onDiscardPassword_Should_ResetPasswordForm_When_Invoked', () => {
+    component['passwordForm'].patchValue({ currentPassword: 'SomePassword' });
+    component['onDiscardPassword']();
+
+    expect(component['passwordForm'].get('currentPassword')?.value).toBeNull();
+    expect(component['isSectionExpanded']('security')).toBeFalse();
+  });
+
+  it('onLogout_Should_NotifyAndCallAuthLogout_When_Invoked', () => {
+    component['onLogout']();
+
+    expect(notificationServiceSpy.info).toHaveBeenCalledWith('You have been signed out.');
+    expect(authServiceSpy.logout).toHaveBeenCalled();
+  });
+
+  it('loadProfile_Should_SetErrorMessage_When_GetProfileFailsWith403', () => {
+    userServiceSpy.getProfile.and.returnValue(
+      throwError(() => new HttpErrorResponse({ status: 403, error: { message: 'Access denied' } })),
+    );
+
+    component['loadProfile']();
+
+    expect(component.snapshot.loading).toBeFalse();
+    expect(component.snapshot.profileErrorMessage).toBe('Access denied');
+  });
+
+  it('onConfirmEmailMock_Should_UpdateEmailConfirmed_When_Invoked', fakeAsync(() => {
+    component['onConfirmEmailMock']();
+    expect(component.snapshot.confirmingEmail).toBeTrue();
+
+    tick(700);
+
+    expect(component.snapshot.confirmingEmail).toBeFalse();
+    expect(component.snapshot.profile?.emailConfirmed).toBeTrue();
+    expect(notificationServiceSpy.success).toHaveBeenCalledWith('Email confirmed successfully! (Mocked)');
+  }));
 });
