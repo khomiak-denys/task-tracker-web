@@ -1,7 +1,15 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, map, catchError, of } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  distinctUntilChanged,
+  map,
+  tap,
+  catchError,
+  of,
+} from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   LoginRequest,
@@ -15,34 +23,61 @@ const TOKEN_KEY = 'access_token';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly apiUrl = `${environment.apiBaseUrl}/api/v1/auth`;
-  private readonly tokenSignal = signal<string | null>(this.getStoredToken());
+  private readonly tokenSubject = new BehaviorSubject<string | null>(this.getStoredToken());
 
-  /** Reactive read-only token value. */
-  readonly token = this.tokenSignal.asReadonly();
+  /** Reactive stream of the current access token. */
+  readonly token$: Observable<string | null> = this.tokenSubject.asObservable();
 
-  /** Whether the user currently holds a non-expired token. */
-  readonly isAuthenticated = computed(() => {
-    const t = this.tokenSignal();
-    if (!t) return false;
-    const payload = this.decodeToken(t);
-    return payload !== null && payload.exp * 1000 > Date.now();
-  });
+  /** Reactive stream of whether the user holds a non-expired token. */
+  readonly isAuthenticated$: Observable<boolean> = this.token$.pipe(
+    map((t) => {
+      if (!t) return false;
+      const payload = this.decodeToken(t);
+      return payload !== null && payload.exp * 1000 > Date.now();
+    }),
+    distinctUntilChanged(),
+  );
 
-  /** Decoded user information from the token. */
-  readonly currentUser = computed(() => {
-    const t = this.tokenSignal();
-    return t ? this.decodeToken(t) : null;
-  });
+  /** Reactive stream of the decoded user payload. */
+  readonly currentUser$: Observable<JwtPayload | null> = this.token$.pipe(
+    map((t) => (t ? this.decodeToken(t) : null)),
+    distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
+  );
 
-  /** Normalized user ID from current token. */
-  readonly currentUserId = computed(() => {
-    return this.currentUser()?.sub || null;
-  });
+  /** Reactive stream of normalized user ID from current token. */
+  readonly currentUserId$: Observable<string | null> = this.currentUser$.pipe(
+    map((user) => user?.sub || null),
+    distinctUntilChanged(),
+  );
 
   constructor(
     private readonly http: HttpClient,
     private readonly router: Router,
   ) {}
+
+  /** Synchronous check whether current token is valid and unexpired. */
+  isAuthenticated(): boolean {
+    const t = this.tokenSubject.value;
+    if (!t) return false;
+    const payload = this.decodeToken(t);
+    return payload !== null && payload.exp * 1000 > Date.now();
+  }
+
+  /** Synchronous getter for currently decoded user. */
+  currentUser(): JwtPayload | null {
+    const t = this.tokenSubject.value;
+    return t ? this.decodeToken(t) : null;
+  }
+
+  /** Synchronous getter for current user ID. */
+  currentUserId(): string | null {
+    return this.currentUser()?.sub || null;
+  }
+
+  /** Synchronous getter for current raw token. */
+  token(): string | null {
+    return this.tokenSubject.value;
+  }
 
   /** POST /api/v1/auth/login */
   login(request: LoginRequest): Observable<string> {
@@ -115,12 +150,12 @@ export class AuthService {
 
   private storeToken(token: string): void {
     localStorage.setItem(TOKEN_KEY, token);
-    this.tokenSignal.set(token);
+    this.tokenSubject.next(token);
   }
 
   private clearToken(): void {
     localStorage.removeItem(TOKEN_KEY);
-    this.tokenSignal.set(null);
+    this.tokenSubject.next(null);
   }
 
   /** Normalize backend response -- the JWT may arrive as `token` or `accessToken`. */

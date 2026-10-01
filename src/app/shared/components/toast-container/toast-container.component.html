@@ -1,5 +1,5 @@
 <aside class="toast-viewport" aria-label="Notifications" aria-live="polite">
-  @for (toast of notificationService.notifications(); track toast.id) {
+  @for (toast of notificationService.notifications$ | async; track toast.id) {
     <div
       class="toast-card toast-{{ toast.type }}"
       role="alert"

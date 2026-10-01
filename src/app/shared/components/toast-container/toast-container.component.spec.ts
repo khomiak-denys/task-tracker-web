@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { signal } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import { ToastContainerComponent } from './toast-container.component';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ToastNotification } from '../../../core/models/notification.models';
@@ -8,11 +8,12 @@ describe('ToastContainerComponent', () => {
   let component: ToastContainerComponent;
   let fixture: ComponentFixture<ToastContainerComponent>;
   let notificationServiceMock: jasmine.SpyObj<NotificationService>;
-  const mockNotificationsSignal = signal<ToastNotification[]>([]);
+  const mockNotificationsSubject = new BehaviorSubject<ToastNotification[]>([]);
 
   beforeEach(async () => {
     notificationServiceMock = jasmine.createSpyObj('NotificationService', ['dismiss'], {
-      notifications: mockNotificationsSignal.asReadonly(),
+      notifications$: mockNotificationsSubject.asObservable(),
+      notifications: () => mockNotificationsSubject.value,
     });
 
     await TestBed.configureTestingModule({
@@ -25,16 +26,16 @@ describe('ToastContainerComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create successfully', () => {
+  it('Init_Should_CreateComponentSuccessfully_When_Instantiated', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should dismiss notification when onDismiss is called', () => {
+  it('onDismiss_Should_CallNotificationServiceDismiss_When_Invoked', () => {
     component['onDismiss']('toast-123');
     expect(notificationServiceMock.dismiss).toHaveBeenCalledWith('toast-123');
   });
 
-  it('should trigger action and dismiss toast on onAction', () => {
+  it('onAction_Should_ExecuteActionCallbackAndDismiss_When_Invoked', () => {
     const actionSpy = jasmine.createSpy('onClick');
     const toast: ToastNotification = {
       id: 'toast-1',
