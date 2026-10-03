@@ -13,7 +13,8 @@ describe('AuthComponent', () => {
   let routerSpy: jasmine.SpyObj<Router>;
 
   beforeEach(async () => {
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['login', 'register']);
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['login', 'register', 'isAdmin']);
+    authServiceSpy.isAdmin.and.returnValue(false);
     notificationServiceSpy = jasmine.createSpyObj('NotificationService', ['success', 'error']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
@@ -71,8 +72,9 @@ describe('AuthComponent', () => {
     expect(authServiceSpy.login).not.toHaveBeenCalled();
   });
 
-  it('onSubmit_Should_NavigateAndNotify_When_LoginSucceeds', () => {
+  it('onSubmit_Should_NavigateToWorkspacesAndNotify_When_UserLoginSucceeds', () => {
     authServiceSpy.login.and.returnValue(of('mock-token'));
+    authServiceSpy.isAdmin.and.returnValue(false);
 
     component['loginForm'].setValue({
       email: 'user@example.com',
@@ -88,8 +90,22 @@ describe('AuthComponent', () => {
     expect(notificationServiceSpy.success).toHaveBeenCalledWith(
       'Welcome back! You have successfully signed in.',
     );
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/']);
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/workspaces']);
     expect(component.snapshot.loading).toBeFalse();
+  });
+
+  it('onSubmit_Should_NavigateToAdmin_When_AdminLoginSucceeds', () => {
+    authServiceSpy.login.and.returnValue(of('mock-token'));
+    authServiceSpy.isAdmin.and.returnValue(true);
+
+    component['loginForm'].setValue({
+      email: 'admin@example.com',
+      password: 'password123',
+    });
+
+    component['onSubmit']();
+
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/admin']);
   });
 
   it('onSubmit_Should_ClearFieldsAndSetServerError_When_LoginFails', () => {
@@ -146,7 +162,7 @@ describe('AuthComponent', () => {
     expect(notificationServiceSpy.success).toHaveBeenCalledWith(
       'Account created successfully! Welcome aboard.',
     );
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/']);
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/workspaces']);
     expect(component.snapshot.loading).toBeFalse();
   });
 
