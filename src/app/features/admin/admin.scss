@@ -1,0 +1,647 @@
+/* Azure DevOps Administration Console Styles */
+
+$az-blue: #0078d4;
+$az-blue-dark: #106ebe;
+$az-text: #201f1e;
+$az-subtext: #605e5c;
+$az-muted: #a19f9d;
+$az-border: #edebe9;
+$az-bg: #f4f5f7;
+$az-card: #ffffff;
+$az-danger: #d13438;
+$az-danger-bg: #fde7e9;
+
+.admin-container {
+  min-height: 100vh;
+  background: $az-bg;
+  color: $az-text;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1.5rem;
+  background: $az-card;
+  border-bottom: 1px solid $az-border;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.header-left,
+.header-right,
+.azure-brand,
+.header-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.header-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $az-text;
+}
+
+.header-breadcrumb {
+  font-size: 0.8125rem;
+  color: $az-subtext;
+  .breadcrumb-current { color: $az-blue; font-weight: 600; }
+  .breadcrumb-separator { color: $az-muted; }
+}
+
+.cmd-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 2px;
+  cursor: pointer;
+  border: 1px solid #d2d0ce;
+  background: #ffffff;
+  color: $az-text;
+  text-decoration: none;
+
+  &:hover { background: #f3f2f1; text-decoration: none; }
+}
+
+/* Command Bar */
+.admin-command-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1.5rem;
+  background: $az-card;
+  border-bottom: 1px solid $az-border;
+}
+
+.nav-tabs-group {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: none;
+  background: none;
+  color: $az-subtext;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+
+  &.active {
+    color: $az-blue;
+    border-bottom-color: $az-blue;
+  }
+  &:hover:not(.active) {
+    color: $az-text;
+    background: #f3f2f1;
+  }
+}
+
+.tab-badge {
+  font-size: 0.6875rem;
+  background: #edebe9;
+  color: $az-subtext;
+  padding: 0.0625rem 0.375rem;
+  border-radius: 10px;
+}
+
+.admin-badge {
+  font-size: 0.75rem;
+  color: #107c10;
+  background: #dff6dd;
+  padding: 0.1875rem 0.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+/* Main Area */
+.admin-main {
+  flex: 1;
+  padding: 1.25rem 1.5rem;
+  overflow: auto;
+}
+
+.admin-card {
+  background: #ffffff;
+  border: 1px solid #e1dfdd;
+  border-radius: 4px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.filter-search {
+  flex: 1;
+  min-width: 250px;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+
+  .filter-item-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: $az-subtext;
+  }
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+/* Table Cells */
+.user-identity-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.user-avatar-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: $az-blue;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.user-name-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-fullname {
+  font-weight: 600;
+  color: $az-text;
+  font-size: 0.8125rem;
+}
+
+.user-username {
+  font-size: 0.75rem;
+  color: $az-subtext;
+}
+
+.user-email-text {
+  font-size: 0.8125rem;
+  color: $az-subtext;
+}
+
+.user-id-mono {
+  font-family: Consolas, monospace;
+  font-size: 0.75rem;
+  color: $az-muted;
+}
+
+.table-actions-group {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.375rem;
+}
+
+.action-btn-danger {
+  color: $az-danger;
+  &:hover { background: $az-danger-bg; }
+}
+
+.pagination-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.5rem;
+  border-top: 1px solid $az-border;
+  font-size: 0.75rem;
+  color: $az-subtext;
+}
+
+.pagination-btns {
+  display: flex;
+  gap: 0.375rem;
+}
+
+/* Sliding Drawer for Reused Profile */
+.profile-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 680px;
+  max-width: 95vw;
+  background: #ffffff;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.18);
+  z-index: 1250;
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight 0.25s ease-out;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid $az-border;
+  background: #fafafa;
+}
+
+.drawer-title-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  margin: 0;
+  color: $az-text;
+}
+
+.drawer-subtitle {
+  font-size: 0.6875rem;
+  color: $az-subtext;
+}
+
+.drawer-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.125rem;
+  cursor: pointer;
+  color: $az-subtext;
+  padding: 0.25rem;
+  border-radius: 2px;
+  &:hover { background: #edebe9; color: $az-text; }
+}
+
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 1.25rem;
+}
+
+/* Role Management Modal */
+.modal-body-content {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.modal-intro-text {
+  font-size: 0.8125rem;
+  color: $az-subtext;
+  margin: 0;
+}
+
+.roles-selection-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.role-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #e1dfdd;
+  border-radius: 4px;
+  background: #fafafa;
+
+  &.is-assigned {
+    background: #ffffff;
+    border-color: $az-blue;
+  }
+}
+
+.role-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1875rem;
+}
+
+.role-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.role-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.125rem 0.4375rem;
+  border-radius: 2px;
+  background: #eff6fc;
+  color: $az-blue;
+
+  &.role-admin { background: #f3f0f8; color: #8764b8; }
+}
+
+.role-assigned-tag {
+  font-size: 0.6875rem;
+  color: #107c10;
+  font-weight: 600;
+}
+
+.role-item-desc {
+  font-size: 0.75rem;
+  color: $az-subtext;
+}
+
+.btn-sm {
+  font-size: 0.75rem;
+  height: 26px;
+  padding: 0 0.625rem;
+}
+
+/* Danger Deletion Modal */
+.danger-modal {
+  border-top: 4px solid $az-danger;
+}
+
+.modal-danger-title {
+  color: $az-danger;
+}
+
+.danger-warning-banner {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: $az-danger-bg;
+  border: 1px solid #f9d9db;
+  border-radius: 4px;
+  color: $az-danger;
+  font-size: 0.8125rem;
+
+  strong { display: block; margin-bottom: 0.125rem; }
+  p { margin: 0; color: #a80000; font-size: 0.75rem; }
+}
+
+.confirmation-prompt-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.confirm-label {
+  font-size: 0.8125rem;
+  color: $az-text;
+
+  code {
+    background: #f3f2f1;
+    padding: 0.125rem 0.375rem;
+    border-radius: 2px;
+    font-weight: 700;
+    color: #a80000;
+  }
+}
+
+.btn-danger {
+  height: 30px;
+  padding: 0 0.875rem;
+  background: $az-danger;
+  color: #ffffff;
+  border: 1px solid $az-danger;
+  border-radius: 2px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: #b1282c;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 0.375rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  color: $az-muted;
+
+  .spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #edebe9;
+    border-top-color: $az-blue;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+}
+
+/* ================================================================
+   Workspaces Management Tab & Modal Styling
+   ================================================================ */
+
+.ws-identity-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ws-color-pill {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.ws-name-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.ws-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $az-text;
+}
+
+.ws-id-sub {
+  font-size: 0.6875rem;
+  color: $az-muted;
+  font-family: monospace;
+}
+
+.ws-desc-text {
+  font-size: 0.8125rem;
+  color: $az-subtext;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+
+.stat-count-pill {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  background: #f3f2f1;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #323130;
+}
+
+.badge-default {
+  display: inline-block;
+  padding: 0.1875rem 0.5rem;
+  background: #e6f2fb;
+  color: $az-blue;
+  border: 1px solid #c7e0f4;
+  border-radius: 3px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-text-action {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.75rem;
+  color: $az-blue;
+  cursor: pointer;
+  text-decoration: underline;
+
+  &:hover {
+    color: $az-blue-dark;
+  }
+}
+
+/* Workspace Modals */
+.ws-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.625rem;
+}
+
+.ws-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $az-text;
+}
+
+.required-star {
+  color: $az-danger;
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.text-uppercase {
+  text-transform: uppercase;
+}
+
+.color-palette-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.color-chip {
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+
+  &:hover {
+    transform: scale(1.15);
+  }
+
+  &.selected {
+    border-color: #201f1e;
+    box-shadow: 0 0 0 2px #ffffff inset;
+    transform: scale(1.15);
+  }
+}
+
+.checkbox-group {
+  margin-top: 0.375rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: $az-text;
+  cursor: pointer;
+
+  input[type='checkbox'] {
+    cursor: pointer;
+  }
+}
+
