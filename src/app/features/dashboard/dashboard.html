@@ -1,19 +1,31 @@
 <div class="dashboard-container">
+  <!-- Azure DevOps Top Navigation Bar -->
   <header class="dashboard-header">
     <div class="header-left">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2L2 7V10C2 16.5 6.84 22.74 12 24C17.16 22.74 22 16.5 22 10V7L12 2Z"
-              fill="url(#dash-shield)" opacity="0.9"/>
-        <path d="M9 12L11 14L15 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <defs>
-          <linearGradient id="dash-shield" x1="2" y1="2" x2="22" y2="24">
-            <stop stop-color="#0078D4"/>
-            <stop offset="1" stop-color="#00BCF2"/>
-          </linearGradient>
-        </defs>
-      </svg>
-      <span class="header-title">Task Tracker</span>
+      <div class="azure-brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 7V10C2 16.5 6.84 22.74 12 24C17.16 22.74 22 16.5 22 10V7L12 2Z"
+                fill="url(#dash-shield)" opacity="0.95"/>
+          <path d="M9 12L11 14L15 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="dash-shield" x1="2" y1="2" x2="22" y2="24">
+              <stop stop-color="#0078D4"/>
+              <stop offset="1" stop-color="#00BCF2"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span class="header-title">Task Tracker</span>
+      </div>
+      <div class="header-breadcrumb">
+        <span class="breadcrumb-separator">/</span>
+        <a routerLink="/workspaces" class="breadcrumb-item breadcrumb-link" id="link-breadcrumb-workspaces" title="View all workspaces">
+          {{ (state$ | async)?.selectedWorkspace?.name || 'Architecture Lab Core' }}
+        </a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">Boards</span>
+      </div>
     </div>
+
     <div class="header-right">
       @if (state$ | async; as state) {
         <div class="user-menu-container">
@@ -36,16 +48,47 @@
                 <button
                   type="button"
                   class="dropdown-item"
+                  (click)="onWorkspaces()"
+                  role="menuitem"
+                  id="menu-item-workspaces"
+                >
+                  <svg class="dropdown-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                  </svg>
+                  <span>Workspaces</span>
+                </button>
+
+                <button
+                  type="button"
+                  class="dropdown-item"
                   (click)="onProfile()"
                   role="menuitem"
                   id="menu-item-profile"
                 >
-                  <svg class="dropdown-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg class="dropdown-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg>
                   <span>Profile</span>
                 </button>
+
+                @if (authService.isAdmin()) {
+                  <button
+                    type="button"
+                    class="dropdown-item"
+                    (click)="onAdmin()"
+                    role="menuitem"
+                    id="menu-item-admin"
+                  >
+                    <svg class="dropdown-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="2" y="3" width="20" height="18" rx="2" ry="2"></rect>
+                      <line x1="9" y1="3" x2="9" y2="21"></line>
+                    </svg>
+                    <span>Admin Console</span>
+                  </button>
+                }
+
 
                 <button
                   type="button"
@@ -54,7 +97,7 @@
                   role="menuitem"
                   id="menu-item-logout"
                 >
-                  <svg class="dropdown-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg class="dropdown-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                     <polyline points="16 17 21 12 16 7"></polyline>
                     <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -69,10 +112,741 @@
     </div>
   </header>
 
-  <main class="dashboard-main">
-    <div class="welcome-card">
-      <h1>Dashboard</h1>
-      <p>Authentication successful. This is a placeholder page -- task management UI will be built here.</p>
+  <!-- Azure DevOps Boards Toolbar: Actions & View Tabs -->
+  <section class="command-bar" aria-label="Boards Toolbar">
+    <div class="command-left">
+      <!-- Main Navigation Tabs: Board | List | Statistics -->
+      @if (state$ | async; as state) {
+        <nav class="nav-tabs-group" role="tablist" aria-label="Dashboard Views">
+          <button
+            type="button"
+            class="tab-btn"
+            [class.active]="state.activeTab === 'board'"
+            (click)="setActiveTab('board')"
+            role="tab"
+            [attr.aria-selected]="state.activeTab === 'board'"
+            id="tab-board"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="5" height="18" rx="1"></rect>
+              <rect x="10" y="3" width="5" height="12" rx="1"></rect>
+              <rect x="17" y="3" width="5" height="15" rx="1"></rect>
+            </svg>
+            <span>Board</span>
+          </button>
+
+          <button
+            type="button"
+            class="tab-btn"
+            [class.active]="state.activeTab === 'list'"
+            (click)="setActiveTab('list')"
+            role="tab"
+            [attr.aria-selected]="state.activeTab === 'list'"
+            id="tab-list"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="6" x2="21" y2="6"></line>
+              <line x1="8" y1="12" x2="21" y2="12"></line>
+              <line x1="8" y1="18" x2="21" y2="18"></line>
+              <line x1="3" y1="6" x2="3.01" y2="6"></line>
+              <line x1="3" y1="12" x2="3.01" y2="12"></line>
+              <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+            <span>List</span>
+          </button>
+
+          <button
+            type="button"
+            class="tab-btn"
+            [class.active]="state.activeTab === 'statistics'"
+            (click)="setActiveTab('statistics')"
+            role="tab"
+            [attr.aria-selected]="state.activeTab === 'statistics'"
+            id="tab-statistics"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+            <span>Statistics</span>
+          </button>
+        </nav>
+      }
     </div>
+
+    <!-- Right Controls: New Item action button -->
+    <div class="command-right">
+      <button
+        type="button"
+        class="cmd-btn cmd-btn-primary"
+        (click)="openCreateModal()"
+        id="btn-create-task"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>New Item</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Main Content Area: Board, List, or Statistics Tab -->
+  <main class="dashboard-main">
+    @if (state$ | async; as state) {
+      <!-- 1. KANBAN BOARD TAB -->
+      @if (state.activeTab === 'board') {
+        <section class="azure-board-wrapper" id="azure-devops-board" aria-label="Kanban Columns">
+          <div class="board-canvas">
+            @for (col of columns$ | async; track col.status) {
+              <div class="board-column" [class]="'board-column ' + col.colorClass" [id]="'column-' + col.status.toLowerCase()">
+                <!-- Column Header -->
+                <div class="column-header">
+                  <div class="column-title-box">
+                    <span class="column-status-line"></span>
+                    <span class="column-name">{{ col.title }}</span>
+                    <span class="column-count-badge">{{ col.count }}</span>
+                  </div>
+                </div>
+
+                <!-- Column Lane (Cards Container) -->
+                <div class="column-lane">
+                  @for (task of col.tasks; track task.id) {
+                    <article
+                      class="board-card"
+                      (click)="onSelectTask(task)"
+                      [attr.id]="'card-' + task.id"
+                      role="button"
+                      tabindex="0"
+                      (keydown.enter)="onSelectTask(task)"
+                    >
+                      <div class="card-left-strip"></div>
+                      <div class="card-inner">
+                        <div class="card-top-row">
+                          <div class="card-type-id">
+                            <span class="task-type-glyph" title="Task">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+                              </svg>
+                            </span>
+                            <span class="card-id-text">#{{ task.id.substring(0, 6) }}</span>
+                          </div>
+                          <span class="priority-pill priority-{{ task.priority.toLowerCase() }}">
+                            {{ task.priority }}
+                          </span>
+                        </div>
+
+                        <h3 class="card-title">{{ task.title }}</h3>
+
+                        @if (task.description) {
+                          <p class="card-desc-preview">{{ task.description }}</p>
+                        }
+
+                        @if (task.tags.length) {
+                          <div class="card-tags-list">
+                            @for (tag of task.tags; track tag) {
+                              <span class="card-tag-pill">{{ tag }}</span>
+                            }
+                          </div>
+                        }
+
+                        <div class="card-footer-row">
+                          <div class="card-footer-left">
+                            @if (task.deadline) {
+                              <span class="card-date-badge">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                                <span>{{ task.deadline | date: 'MMM d' }}</span>
+                              </span>
+                            }
+                          </div>
+                          <div class="card-footer-right">
+                            @if (task.assigneeId) {
+                              <span class="card-assignee-avatar" title="Assigned">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                  <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                              </span>
+                            } @else {
+                              <span class="unassigned-placeholder" title="Unassigned">-</span>
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    </article>
+                  } @empty {
+                    <button
+                      type="button"
+                      class="column-empty-placeholder"
+                      (click)="openCreateModal()"
+                      [id]="'btn-add-item-' + col.status.toLowerCase()"
+                      title="New item"
+                      aria-label="New item"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- 2. LIST VIEW TAB -->
+      @else if (state.activeTab === 'list') {
+        <div class="azure-grid-card">
+
+          <div class="grid-header-meta">
+            <div class="meta-title-group">
+              <h2 class="grid-title">Tasks Management</h2>
+              <span class="schema-badge">Task Tracker Grid</span>
+            </div>
+            <span class="grid-count">
+              Showing {{ (filteredTasks$ | async)?.length || 0 }} items
+            </span>
+          </div>
+
+          <div class="table-responsive">
+            <table class="azure-table" id="tasks-table">
+              <thead>
+                <tr>
+                  <th scope="col" style="width: 130px;">Status</th>
+                  <th scope="col" style="width: 100px;">Priority</th>
+                  <th scope="col">Title & Scope</th>
+                  <th scope="col" style="width: 180px;">Tags</th>
+                  <th scope="col" style="width: 140px;">Deadline</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (task of filteredTasks$ | async; track task.id) {
+                  <tr class="table-row" (click)="onSelectTask(task)">
+                    <td>
+                      <span class="status-pill status-{{ task.status.toLowerCase() }}">
+                        <span class="status-dot"></span>
+                        <span>{{ task.status }}</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="priority-badge priority-{{ task.priority.toLowerCase() }}">
+                        {{ task.priority }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="task-title-cell">
+                        <span class="task-title-text">{{ task.title }}</span>
+                        @if (task.description) {
+                          <span class="task-desc-text">{{ task.description }}</span>
+                        }
+                      </div>
+                    </td>
+                    <td>
+                      <div class="tags-list">
+                        @for (tag of task.tags; track tag) {
+                          <span class="tag-chip">{{ tag }}</span>
+                        }
+                        @if (!task.tags.length) {
+                          <span class="empty-muted">-</span>
+                        }
+                      </div>
+                    </td>
+                    <td>
+                      @if (task.deadline) {
+                        <span class="deadline-text">
+                          {{ task.deadline | date: 'mediumDate' }}
+                        </span>
+                      } @else {
+                        <span class="empty-muted">None</span>
+                      }
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="empty-row">
+                      <div class="empty-state">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                          <line x1="16" y1="2" x2="16" y2="6"></line>
+                          <line x1="8" y1="2" x2="8" y2="6"></line>
+                          <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        <p class="empty-title">No tasks found</p>
+                        <p class="empty-subtitle">Try adjusting your filters or click "New Item" to register a task item.</p>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      <!-- 3. STATISTICS TAB (HOUSED STATS & FILTRATION) -->
+      @else if (state.activeTab === 'statistics') {
+        @if (stats$ | async; as stats) {
+          <div class="stats-container" id="statistics-view">
+            <!-- Dedicated Filtration Panel -->
+            <section class="stats-filter-panel" aria-label="Analytics Filtration">
+              <div class="filter-panel-header">
+                <div class="filter-title-wrap">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                  </svg>
+                  <h3 class="filter-panel-title">Filtration & Analytics Scope</h3>
+                </div>
+                <button type="button" class="reset-filter-btn" (click)="resetFilters()">
+                  Reset Filters
+                </button>
+              </div>
+
+              <div class="filter-controls-row">
+                <!-- Scope Pivot -->
+                <div class="scope-pivot-wrap">
+                  <div class="view-pivot">
+                    <button
+                      type="button"
+                      class="pivot-tab"
+                      [class.active]="state.viewMode === 'my-tasks'"
+                      (click)="switchViewMode('my-tasks')"
+                      id="stats-tab-my-tasks"
+                    >
+                      My Work Items
+                    </button>
+                    <button
+                      type="button"
+                      class="pivot-tab"
+                      [class.active]="state.viewMode === 'all-tasks'"
+                      (click)="switchViewMode('all-tasks')"
+                      id="stats-tab-all-tasks"
+                    >
+                      All Work Items
+                    </button>
+                  </div>
+
+                  @if (state.viewMode === 'my-tasks') {
+                    <div class="sub-filter-group">
+                      <button
+                        type="button"
+                        class="sub-filter-btn"
+                        [class.active]="state.myFilterType === 'all'"
+                        (click)="setMyFilterType('all')"
+                      >
+                        All Mine
+                      </button>
+                      <button
+                        type="button"
+                        class="sub-filter-btn"
+                        [class.active]="state.myFilterType === 'assigned'"
+                        (click)="setMyFilterType('assigned')"
+                      >
+                        Assigned to me
+                      </button>
+                      <button
+                        type="button"
+                        class="sub-filter-btn"
+                        [class.active]="state.myFilterType === 'created'"
+                        (click)="setMyFilterType('created')"
+                      >
+                        Created by me
+                      </button>
+                    </div>
+                  }
+                </div>
+
+                <!-- Status Filter -->
+                <div class="filter-item">
+                  <label for="stats-status-filter" class="filter-item-label">Status</label>
+                  <select
+                    id="stats-status-filter"
+                    class="azure-select"
+                    [value]="state.statusFilter"
+                    (change)="setStatusFilter($any($event.target).value)"
+                  >
+                    <option value="ALL">All Statuses</option>
+                    <option value="Todo">To Do</option>
+                    <option value="InProgress">In Progress</option>
+                    <option value="InReview">In Review</option>
+                    <option value="Done">Done</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </div>
+
+                <!-- Priority Filter -->
+                <div class="filter-item">
+                  <label for="stats-priority-filter" class="filter-item-label">Priority</label>
+                  <select
+                    id="stats-priority-filter"
+                    class="azure-select"
+                    [value]="state.priorityFilter"
+                    (change)="setPriorityFilter($any($event.target).value)"
+                  >
+                    <option value="ALL">All Priorities</option>
+                    <option value="Critical">Critical</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+
+                <!-- Keyword Search Box -->
+                <div class="filter-item filter-search-item">
+                  <label for="stats-search-tasks" class="filter-item-label">Keyword</label>
+                  <div class="search-box">
+                    <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input
+                      type="text"
+                      id="stats-search-tasks"
+                      placeholder="Filter by keyword..."
+                      [value]="state.searchQuery"
+                      (input)="onSearchChange($any($event.target).value)"
+                    />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Metrics Summary Cards (Total Scope, Active, Closed, etc.) -->
+            <section class="stats-kpi-grid" aria-label="Key Performance Indicators">
+              <div class="stat-card stat-total-scope">
+                <span class="stat-card-label">Total Scope</span>
+                <span class="stat-card-value">{{ stats.totalScope }}</span>
+                <span class="stat-card-hint">All items registered</span>
+              </div>
+
+              <div class="stat-card stat-filtered">
+                <span class="stat-card-label">Active Filter Scope</span>
+                <span class="stat-card-value">{{ stats.total }}</span>
+                <span class="stat-card-hint">Matching active filters</span>
+              </div>
+
+              <div class="stat-card stat-in-progress">
+                <span class="stat-card-label">In Progress</span>
+                <span class="stat-card-value">{{ stats.inProgress }}</span>
+                <span class="stat-card-hint">Under active work</span>
+              </div>
+
+              <div class="stat-card stat-in-review">
+                <span class="stat-card-label">In Review</span>
+                <span class="stat-card-value">{{ stats.inReview }}</span>
+                <span class="stat-card-hint">Awaiting verification</span>
+              </div>
+
+              <div class="stat-card stat-done">
+                <span class="stat-card-label">Closed / Done</span>
+                <span class="stat-card-value">{{ stats.done }}</span>
+                <span class="stat-card-hint">Successfully resolved</span>
+              </div>
+
+              <div class="stat-card stat-critical">
+                <span class="stat-card-label">Critical Urgency</span>
+                <span class="stat-card-value">{{ stats.critical }}</span>
+                <span class="stat-card-hint">Immediate attention</span>
+              </div>
+
+              <div class="stat-card stat-rate">
+                <span class="stat-card-label">Completion Rate</span>
+                <span class="stat-card-value">{{ stats.completionRate }}%</span>
+                <span class="stat-card-hint">Resolved vs Filtered</span>
+              </div>
+            </section>
+
+            <!-- Distribution & Pipeline Widgets -->
+            <div class="analytics-widgets-grid">
+              <!-- Widget 1: Workflow Status Distribution -->
+              <section class="analytics-widget-card" aria-label="Workflow Status Pipeline">
+                <h4 class="widget-title">Workflow Status Pipeline</h4>
+
+                <div class="distribution-list">
+                  <div class="distribution-item">
+                    <div class="dist-header">
+                      <span class="dist-name">To Do (New)</span>
+                      <span class="dist-nums">{{ stats.todo }} ({{ stats.total > 0 ? (stats.todo / stats.total * 100 | number: '1.0-0') : 0 }}%)</span>
+                    </div>
+                    <div class="dist-track">
+                      <div class="dist-fill fill-todo" [style.width.%]="stats.total > 0 ? (stats.todo / stats.total * 100) : 0"></div>
+                    </div>
+                  </div>
+
+                  <div class="distribution-item">
+                    <div class="dist-header">
+                      <span class="dist-name">In Progress (Active)</span>
+                      <span class="dist-nums">{{ stats.inProgress }} ({{ stats.total > 0 ? (stats.inProgress / stats.total * 100 | number: '1.0-0') : 0 }}%)</span>
+                    </div>
+                    <div class="dist-track">
+                      <div class="dist-fill fill-inprogress" [style.width.%]="stats.total > 0 ? (stats.inProgress / stats.total * 100) : 0"></div>
+                    </div>
+                  </div>
+
+                  <div class="distribution-item">
+                    <div class="dist-header">
+                      <span class="dist-name">In Review (Validation)</span>
+                      <span class="dist-nums">{{ stats.inReview }} ({{ stats.total > 0 ? (stats.inReview / stats.total * 100 | number: '1.0-0') : 0 }}%)</span>
+                    </div>
+                    <div class="dist-track">
+                      <div class="dist-fill fill-inreview" [style.width.%]="stats.total > 0 ? (stats.inReview / stats.total * 100) : 0"></div>
+                    </div>
+                  </div>
+
+                  <div class="distribution-item">
+                    <div class="dist-header">
+                      <span class="dist-name">Done (Closed)</span>
+                      <span class="dist-nums">{{ stats.done }} ({{ stats.total > 0 ? (stats.done / stats.total * 100 | number: '1.0-0') : 0 }}%)</span>
+                    </div>
+                    <div class="dist-track">
+                      <div class="dist-fill fill-done" [style.width.%]="stats.total > 0 ? (stats.done / stats.total * 100) : 0"></div>
+                    </div>
+                  </div>
+
+                  <div class="distribution-item">
+                    <div class="dist-header">
+                      <span class="dist-name">Cancelled</span>
+                      <span class="dist-nums">{{ stats.cancelled }} ({{ stats.total > 0 ? (stats.cancelled / stats.total * 100 | number: '1.0-0') : 0 }}%)</span>
+                    </div>
+                    <div class="dist-track">
+                      <div class="dist-fill fill-cancelled" [style.width.%]="stats.total > 0 ? (stats.cancelled / stats.total * 100) : 0"></div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Widget 2: Priority Severity Distribution -->
+              <section class="analytics-widget-card" aria-label="Priority Severity Distribution">
+                <h4 class="widget-title">Priority Severity Distribution</h4>
+
+                <div class="distribution-list">
+                  <div class="distribution-item">
+                    <div class="dist-header">
+                      <span class="dist-name">Critical</span>
+                      <span class="dist-nums">{{ stats.critical }} ({{ stats.total > 0 ? (stats.critical / stats.total * 100 | number: '1.0-0') : 0 }}%)</span>
+                    </div>
+                    <div class="dist-track">
+                      <div class="dist-fill fill-critical" [style.width.%]="stats.total > 0 ? (stats.critical / stats.total * 100) : 0"></div>
+                    </div>
+                  </div>
+
+                  <div class="distribution-item">
+                    <div class="dist-header">
+                      <span class="dist-name">High</span>
+                      <span class="dist-nums">{{ stats.high }} ({{ stats.total > 0 ? (stats.high / stats.total * 100 | number: '1.0-0') : 0 }}%)</span>
+                    </div>
+                    <div class="dist-track">
+                      <div class="dist-fill fill-high" [style.width.%]="stats.total > 0 ? (stats.high / stats.total * 100) : 0"></div>
+                    </div>
+                  </div>
+
+                  <div class="distribution-item">
+                    <div class="dist-header">
+                      <span class="dist-name">Medium</span>
+                      <span class="dist-nums">{{ stats.medium }} ({{ stats.total > 0 ? (stats.medium / stats.total * 100 | number: '1.0-0') : 0 }}%)</span>
+                    </div>
+                    <div class="dist-track">
+                      <div class="dist-fill fill-medium" [style.width.%]="stats.total > 0 ? (stats.medium / stats.total * 100) : 0"></div>
+                    </div>
+                  </div>
+
+                  <div class="distribution-item">
+                    <div class="dist-header">
+                      <span class="dist-name">Low</span>
+                      <span class="dist-nums">{{ stats.low }} ({{ stats.total > 0 ? (stats.low / stats.total * 100 | number: '1.0-0') : 0 }}%)</span>
+                    </div>
+                    <div class="dist-track">
+                      <div class="dist-fill fill-low" [style.width.%]="stats.total > 0 ? (stats.low / stats.total * 100) : 0"></div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        }
+      }
+    }
   </main>
+
+  <!-- Azure DevOps Task Details Component -->
+  <app-task-details
+    [task]="(state$ | async)?.selectedTask || null"
+    [isOpen]="!!(state$ | async)?.isBladeOpen"
+    (closeBlade)="closeBlade()"
+    (statusChange)="onDetailsStatusChange($event)"
+    (logTime)="openLogTimeForSelected()"
+    (complete)="onDetailsComplete()"
+    (cancel)="onDetailsCancel()"
+  ></app-task-details>
+
+  <!-- Azure Modal: Create Task (POST /api/v1/tasks) -->
+  @if ((state$ | async)?.isCreateModalOpen) {
+    <div class="modal-overlay" (click)="closeCreateModal()"></div>
+    <div class="azure-modal" role="dialog" aria-labelledby="modal-create-title">
+      <div class="modal-header">
+        <h2 id="modal-create-title" class="modal-title">Create New Work Item</h2>
+        <button type="button" class="modal-close-btn" (click)="closeCreateModal()">✕</button>
+      </div>
+
+      <form [formGroup]="createTaskForm" (ngSubmit)="onCreateTaskSubmit()" class="azure-modal-form">
+        <div class="form-field">
+          <label for="create-title">Title <span class="required">*</span></label>
+          <input
+            id="create-title"
+            type="text"
+            formControlName="title"
+            placeholder="e.g. Implement OIDC token endpoint"
+            class="azure-input"
+          />
+          <div class="field-error-slot" aria-live="polite">
+            @if (createTaskForm.get('title')?.touched && createTaskForm.get('title')?.errors?.['required']) {
+              <span class="field-error">Title is required.</span>
+            } @else if (createTaskForm.get('title')?.touched && createTaskForm.get('title')?.errors?.['minlength']) {
+              <span class="field-error">Title must be at least 3 characters.</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-field">
+            <label for="create-priority">Priority <span class="required">*</span></label>
+            <select id="create-priority" formControlName="priority" class="azure-select">
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+              <option value="Critical">Critical</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="create-deadline">Deadline</label>
+            <input
+              id="create-deadline"
+              type="date"
+              formControlName="deadline"
+              class="azure-input"
+            />
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="create-tags">Tags</label>
+          <div class="azure-tags-input-container" (click)="focusTagInput(tagInputEl)">
+            @for (tag of createdTags; track tag) {
+              <span class="tag-fourangle">
+                <span class="tag-text">{{ tag }}</span>
+                <button
+                  type="button"
+                  class="btn-remove-tag"
+                  (click)="removeCreatedTag(tag, $event)"
+                  [attr.aria-label]="'Remove tag ' + tag"
+                >
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </span>
+            }
+            <input
+              #tagInputEl
+              id="create-tags"
+              type="text"
+              class="tag-inline-input"
+              [value]="tagInputText"
+              (input)="onTagInput($any($event.target).value)"
+              (keydown)="onTagKeyDown($event)"
+              (blur)="onTagBlur()"
+              [placeholder]="createdTags.length === 0 ? 'e.g. Security, Auth, Gateway' : 'Add another tag...'"
+            />
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="create-description">Description</label>
+          <textarea
+            id="create-description"
+            rows="3"
+            formControlName="description"
+            placeholder="Work item description and acceptance criteria..."
+            class="azure-textarea"
+          ></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeCreateModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="createTaskForm.invalid">
+            Save Item
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- Azure Modal: Log Time (POST /api/v1/tasks/{id}/time-logs) -->
+  @if ((state$ | async)?.isLogTimeModalOpen) {
+    <div class="modal-overlay" (click)="closeLogTimeModal()"></div>
+    <div class="azure-modal" role="dialog" aria-labelledby="modal-time-title">
+      <div class="modal-header">
+        <h2 id="modal-time-title" class="modal-title">Log Time on Work Item</h2>
+        <button type="button" class="modal-close-btn" (click)="closeLogTimeModal()">✕</button>
+      </div>
+
+      <form [formGroup]="logTimeForm" (ngSubmit)="onLogTimeSubmit()" class="azure-modal-form">
+        <div class="form-field">
+          <label for="log-minutes">Duration <span class="required">*</span></label>
+          <select
+            id="log-minutes"
+            formControlName="minutesSpent"
+            class="azure-select"
+          >
+            @for (preset of timePresets; track preset.minutes) {
+              <option [ngValue]="preset.minutes">{{ preset.description }}</option>
+            }
+          </select>
+          <div class="field-error-slot" aria-live="polite">
+            @if (logTimeForm.get('minutesSpent')?.touched && logTimeForm.get('minutesSpent')?.errors?.['required']) {
+              <span class="field-error">Duration is required.</span>
+            }
+          </div>
+        </div>
+
+
+        <div class="form-field">
+          <label for="log-date">Date <span class="required">*</span></label>
+          <input
+            id="log-date"
+            type="date"
+            formControlName="loggedDate"
+            class="azure-input"
+          />
+        </div>
+
+        <div class="form-field">
+          <label for="log-desc">Work Description</label>
+          <textarea
+            id="log-desc"
+            rows="3"
+            formControlName="description"
+            placeholder="Details of the work completed during this session..."
+            class="azure-textarea"
+          ></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeLogTimeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="logTimeForm.invalid">
+            Record Time
+          </button>
+        </div>
+      </form>
+    </div>
+  }
 </div>

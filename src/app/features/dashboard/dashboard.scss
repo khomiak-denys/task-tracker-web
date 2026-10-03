@@ -1,117 +1,101 @@
-/* ================================================================
-   Dashboard Stub Styles (Azure Design Language)
-   ================================================================ */
+/* Azure DevOps Boards - Tasks Dashboard Styles */
 
-$azure-primary: #0078d4;
-$azure-primary-hover: #106ebe;
-$azure-text-primary: #323130;
-$azure-text-secondary: #605e5c;
-$azure-border: #e1dfdd;
-$azure-bg: #f5f5f5;
-$azure-card-bg: #ffffff;
+$az-blue: #0078d4;
+$az-blue-dark: #106ebe;
+$az-blue-light: #eff6fc;
+$az-text: #201f1e;
+$az-subtext: #605e5c;
+$az-muted: #a19f9d;
+$az-border: #edebe9;
+$az-bg: #f4f5f7;
+$az-card: #ffffff;
+$az-task-gold: #ffb900;
 
 .dashboard-container {
   min-height: 100vh;
-  background: $azure-bg;
+  background: $az-bg;
+  color: $az-text;
   display: flex;
   flex-direction: column;
 }
 
+/* Header */
 .dashboard-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1.5rem;
-  background: $azure-card-bg;
-  border-bottom: 1px solid $azure-border;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  padding: 0.5rem 1.5rem;
+  background: $az-card;
+  border-bottom: 1px solid $az-border;
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
-.header-left {
+.header-left,
+.azure-brand,
+.header-breadcrumb,
+.header-right {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 .header-title {
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 600;
-  color: $azure-text-primary;
-  letter-spacing: -0.01em;
+  color: $az-text;
 }
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+.header-breadcrumb {
+  font-size: 0.8125rem;
+  color: $az-subtext;
+  .breadcrumb-current { color: $az-blue; font-weight: 600; }
+  .breadcrumb-separator { color: $az-muted; }
+  .breadcrumb-link {
+    color: $az-subtext;
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+    &:hover {
+      color: $az-blue;
+      text-decoration: underline;
+    }
+  }
 }
 
-/* -- User menu & avatar -- */
-.user-menu-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
+/* User Menu */
+.user-menu-container { position: relative; }
 
 .avatar-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: 2px solid transparent;
-  background: $azure-primary;
-  color: #ffffff;
+  border: none;
+  background: $az-blue;
+  color: #fff;
   cursor: pointer;
-  padding: 0;
+  font-weight: 600;
+  font-size: 0.875rem;
 
   &:focus-visible,
   &.active {
-    outline: none;
-    box-shadow:
-      0 0 0 2px #ffffff,
-      0 0 0 4px $azure-primary;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px $az-blue;
   }
 }
 
-.avatar-letter {
-  font-size: 0.875rem;
-  font-weight: 600;
-  line-height: 1;
-  text-transform: uppercase;
-  user-select: none;
-}
-
-/* -- User dropdown -- */
 .user-dropdown {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 6px);
   right: 0;
-  min-width: 150px;
-  background: $azure-card-bg;
-  border: 1px solid $azure-border;
-  border-radius: 6px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  padding: 0.375rem 0;
-  z-index: 1000;
-  animation: dropdownFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes dropdownFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.dropdown-items {
-  display: flex;
-  flex-direction: column;
+  min-width: 180px;
+  width: max-content;
+  background: $az-card;
+  border: 1px solid $az-border;
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  padding: 0.25rem 0;
+  z-index: 100;
 }
 
 .dropdown-item {
@@ -119,81 +103,631 @@ $azure-card-bg: #ffffff;
   align-items: center;
   gap: 0.625rem;
   width: 100%;
-  padding: 0.5625rem 1rem;
+  padding: 0.4375rem 1rem;
   border: none;
-  background: transparent;
-  color: $azure-text-primary;
-  font-size: 0.84375rem;
-  font-weight: 500;
+  background: none;
+  font-size: 0.8125rem;
+  color: $az-text;
   cursor: pointer;
-  text-align: left;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease;
+  white-space: nowrap;
 
-  .dropdown-icon {
-    color: $azure-text-secondary;
-    flex-shrink: 0;
-    transition: color 0.15s ease;
+  span {
+    white-space: nowrap;
   }
 
-  &:hover {
-    background: #f3f2f1;
-    color: $azure-primary;
-
-    .dropdown-icon {
-      color: $azure-primary;
-    }
-  }
-
-  &.dropdown-item-danger:hover {
-    background: #fde7e9;
-    color: #d13438;
-
-    .dropdown-icon {
-      color: #d13438;
-    }
+  &:hover { background: #f3f2f1; }
+  &.dropdown-item-danger {
+    color: #a80000;
+    &:hover { background: #fde7e9; }
   }
 }
 
+/* Command Bar */
+.command-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.5rem 1.5rem;
+  background: $az-card;
+  border-bottom: 1px solid $az-border;
+}
+
+.command-left,
+.command-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.cmd-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 2px;
+  cursor: pointer;
+  border: 1px solid transparent;
+
+  &.cmd-btn-primary {
+    background: $az-blue;
+    color: #fff;
+    &:hover { background: $az-blue-dark; }
+  }
+
+  &.cmd-btn-secondary {
+    background: #fff;
+    border-color: #d2d0ce;
+    color: $az-text;
+    &:hover { background: #f3f2f1; }
+  }
+}
+
+.cmd-divider {
+  width: 1px;
+  height: 20px;
+  background: $az-border;
+  margin: 0 0.25rem;
+}
+
+.view-pivot {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.pivot-tab {
+  padding: 0.375rem 0.625rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: none;
+  background: none;
+  color: $az-subtext;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+
+  &.active {
+    color: $az-blue;
+    border-bottom-color: $az-blue;
+  }
+  &:hover:not(.active) { color: $az-text; }
+}
+
+.sub-filter-group {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.sub-filter-btn {
+  padding: 0.1875rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 12px;
+  border: 1px solid #d2d0ce;
+  background: #fff;
+  color: $az-subtext;
+  cursor: pointer;
+
+  &.active {
+    background: #201f1e;
+    color: #fff;
+    border-color: #201f1e;
+  }
+  &:hover:not(.active) { background: #f3f2f1; }
+}
+
+.nav-tabs-group {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: none;
+  background: none;
+  color: $az-subtext;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+
+  &.active {
+    color: $az-blue;
+    border-bottom-color: $az-blue;
+  }
+  &:hover:not(.active) {
+    color: $az-text;
+    background: #f3f2f1;
+  }
+}
+
+
+/* Main Area */
 .dashboard-main {
   flex: 1;
+  padding: 1.25rem 1.5rem;
+  overflow: hidden;
+}
+
+/* Azure DevOps Board */
+.azure-board-wrapper {
+  overflow-x: auto;
+  padding-bottom: 1rem;
+}
+
+.board-canvas {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(270px, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.board-column {
+  display: flex;
+  flex-direction: column;
+  background: #f4f5f7;
+  border: 1px solid #e1dfdd;
+  border-radius: 4px;
+  min-height: 520px;
+
+  &.col-todo .column-status-line { background: #8a8886; }
+  &.col-in-progress .column-status-line { background: #0078d4; }
+  &.col-in-review .column-status-line { background: #8764b8; }
+  &.col-done .column-status-line { background: #107c41; }
+  &.col-cancelled .column-status-line { background: #a80000; }
+}
+
+.column-header {
+  padding: 0.625rem 0.75rem;
+  background: #ffffff;
+  border-bottom: 1px solid #edebe9;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.column-title-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.column-status-line {
+  width: 4px;
+  height: 16px;
+  border-radius: 2px;
+}
+
+.column-name {
+  font-weight: 700;
+  font-size: 0.8125rem;
+  color: $az-text;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.column-count-badge {
+  font-size: 0.75rem;
+  color: $az-subtext;
+  background: #edebe9;
+  padding: 0.0625rem 0.4375rem;
+  border-radius: 10px;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.column-lane {
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  flex: 1;
+}
+
+.column-empty-placeholder {
+  width: 100%;
+  border: 1.5px dashed #d2d0ce;
+  border-radius: 4px;
+  padding: 2.5rem 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  background: rgba(255, 255, 255, 0.5);
+  color: #605e5c;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+
+  svg {
+    stroke: #8a8886;
+    transition: transform 0.2s ease, stroke 0.2s ease;
+  }
+
+  &:hover {
+    background: #ffffff;
+    border-color: #0078d4;
+    box-shadow: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.1);
+
+    svg {
+      stroke: #0078d4;
+      transform: scale(1.2);
+    }
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #0078d4;
+    outline-offset: 1px;
+    background: #ffffff;
+    border-color: #0078d4;
+  }
 }
 
-.welcome-card {
-  text-align: center;
-  max-width: 480px;
-  background: $azure-card-bg;
-  padding: 3rem 2.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+/* Azure DevOps Card */
+.board-card {
+  background: #ffffff;
+  border: 1px solid #e1dfdd;
+  border-radius: 3px;
+  box-shadow: 0 1.6px 3.6px 0 rgba(0,0,0,0.11), 0 0.3px 0.9px 0 rgba(0,0,0,0.08);
+  display: flex;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  outline: none;
 
-  h1 {
-    font-size: 1.75rem;
-    font-weight: 600;
-    color: $azure-text-primary;
-    margin: 0 0 0.75rem;
-    letter-spacing: -0.02em;
+  &:hover {
+    border-color: $az-blue;
+    box-shadow: 0 3.2px 7.2px 0 rgba(0,0,0,0.13), 0 0.6px 1.8px 0 rgba(0,0,0,0.1);
+    transform: translateY(-1px);
   }
 
-  p {
-    font-size: 0.9375rem;
-    color: $azure-text-secondary;
-    line-height: 1.5;
-    margin: 0;
+  &:focus-visible {
+    border-color: $az-blue;
+    box-shadow: 0 0 0 2px $az-blue;
   }
 }
 
-@media (max-width: 480px) {
-  .dashboard-header {
-    padding: 0.625rem 1rem;
+.card-left-strip {
+  width: 4px;
+  background: $az-task-gold;
+  flex-shrink: 0;
+  border-top-left-radius: 2px;
+  border-bottom-left-radius: 2px;
+}
+
+.card-inner {
+  padding: 0.625rem 0.75rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.card-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-type-id {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+
+  .task-type-glyph {
+    color: $az-task-gold;
+    display: inline-flex;
   }
 
-  .welcome-card {
-    padding: 2rem 1.5rem;
+  .card-id-text {
+    font-family: Consolas, monospace;
+    font-size: 0.75rem;
+    color: $az-subtext;
+    font-weight: 500;
+  }
+}
+
+.card-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: $az-text;
+  line-height: 1.35;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-desc-preview {
+  font-size: 0.75rem;
+  color: $az-subtext;
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.card-tag-pill {
+  font-size: 0.6875rem;
+  background: #eff6fc;
+  color: #004578;
+  border: 1px solid #c7e0f4;
+  border-radius: 2px;
+  padding: 0.0625rem 0.375rem;
+}
+
+.card-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+  padding-top: 0.375rem;
+  border-top: 1px solid #f3f2f1;
+}
+
+.card-date-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.6875rem;
+  color: $az-subtext;
+}
+
+.card-assignee-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: $az-blue;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.unassigned-placeholder {
+  font-size: 0.75rem;
+  color: $az-muted;
+}
+
+/* List Table View */
+.azure-grid-card {
+  background: #fff;
+  border: 1px solid #e1dfdd;
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.grid-header-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.grid-title { font-size: 1rem; font-weight: 600; margin: 0; }
+.schema-badge {
+  font-size: 0.6875rem;
+  background: #eff6fc;
+  color: $az-blue;
+  padding: 0.125rem 0.375rem;
+  border-radius: 2px;
+  margin-left: 0.5rem;
+}
+
+.grid-count { font-size: 0.75rem; color: $az-subtext; }
+
+.table-responsive { overflow-x: auto; }
+
+.task-title-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.task-title-text { font-weight: 600; color: $az-text; }
+.task-desc-text { font-size: 0.75rem; color: $az-subtext; }
+
+.tags-list { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+.tag-chip {
+  font-size: 0.6875rem;
+  background: #eff6fc;
+  color: #004578;
+  padding: 0.0625rem 0.375rem;
+  border-radius: 2px;
+}
+
+/* Statistics View & Analytics */
+.stats-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.stats-filter-panel {
+  background: #ffffff;
+  border: 1px solid #e1dfdd;
+  border-radius: 4px;
+  padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.filter-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filter-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: $az-blue;
+}
+
+.filter-panel-title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: $az-text;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.reset-filter-btn {
+  border: none;
+  background: none;
+  color: $az-blue;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  &:hover { text-decoration: underline; }
+}
+
+.filter-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.scope-pivot-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.filter-item-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $az-subtext;
+}
+
+.filter-search-item {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Tag Input Chips / Fourangles */
+.azure-tags-input-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 32px;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #d2d0ce;
+  border-radius: 2px;
+  background: #ffffff;
+  cursor: text;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    border-color: #a19f9d;
+  }
+
+  &:focus-within {
+    border-color: $az-blue;
+    box-shadow: 0 0 0 1px $az-blue;
+  }
+}
+
+.tag-fourangle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: $az-blue-light;
+  color: #004578;
+  border: 1px solid #c7e0f4;
+  border-radius: 2px;
+  padding: 0.125rem 0.375rem 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.25;
+  user-select: none;
+  animation: tagChipPop 0.15s ease-out;
+
+  .tag-text {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .btn-remove-tag {
+    border: none;
+    background: transparent;
+    color: #004578;
+    cursor: pointer;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    opacity: 0.65;
+    transition: opacity 0.15s ease, background 0.15s ease;
+
+    &:hover {
+      opacity: 1;
+      background: rgba(0, 120, 212, 0.15);
+    }
+  }
+}
+
+@keyframes tagChipPop {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.tag-inline-input {
+  flex: 1;
+  min-width: 140px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.8125rem;
+  color: $az-text;
+  padding: 0.125rem 0;
+  font-family: inherit;
+
+  &::placeholder {
+    color: $az-muted;
   }
 }
