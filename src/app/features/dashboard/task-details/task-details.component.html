@@ -1,0 +1,298 @@
+@if (isOpen && task) {
+  <div class="blade-overlay" (click)="onClose()"></div>
+  <aside class="azure-blade" role="dialog" aria-labelledby="blade-title" aria-modal="true">
+    <!-- Work Item Top Bar -->
+    <div class="blade-header">
+      <div class="header-type-badge">
+        <span class="type-icon-box" title="Work Item Type: Task">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+          </svg>
+        </span>
+        <span class="type-label">Task</span>
+        <span class="item-id">#{{ task.id.substring(0, 8) }}</span>
+      </div>
+
+      <button
+        type="button"
+        class="blade-close-btn"
+        (click)="onClose()"
+        aria-label="Close task details"
+        id="btn-close-task-details"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Title Header -->
+    <div class="blade-title-container">
+      <h2 id="blade-title" class="blade-title-text">{{ task.title }}</h2>
+    </div>
+
+    <!-- Work Item Command Ribbon / State & Actions -->
+    <div class="blade-ribbon">
+      <div class="ribbon-state-selector">
+        <label for="details-state-select" class="ribbon-label">State</label>
+        <select
+          id="details-state-select"
+          class="state-select"
+          [value]="task.status"
+          (change)="onStatusChange($any($event.target).value)"
+          aria-label="Work item state"
+        >
+          @for (s of statuses; track s.key) {
+            <option [value]="s.key" [selected]="task.status === s.key">{{ s.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="ribbon-actions">
+        <button
+          type="button"
+          class="ribbon-btn ribbon-btn-action"
+          (click)="onLogTime()"
+          id="btn-details-log-time"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>Log Time</span>
+        </button>
+
+        @if (task.status !== 'Done') {
+          <button
+            type="button"
+            class="ribbon-btn ribbon-btn-success"
+            (click)="onComplete()"
+            id="btn-details-complete"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Complete</span>
+          </button>
+        }
+
+        @if (task.status !== 'Cancelled') {
+          <button
+            type="button"
+            class="ribbon-btn ribbon-btn-danger"
+            (click)="onCancel()"
+            id="btn-details-cancel"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            <span>Cancel</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Work Item Main Form Layout -->
+    <div class="blade-body">
+      <!-- Left Column: Description, Tags, Time Logs -->
+      <div class="form-main-pane">
+        <!-- Description -->
+        <section class="form-section">
+          <h3 class="section-title">Description</h3>
+          <div class="desc-box">
+            {{ task.description || 'No description provided for this work item.' }}
+          </div>
+        </section>
+
+        <!-- Tags -->
+        <section class="form-section">
+          <h3 class="section-title">Tags</h3>
+          <div class="tags-container">
+            @for (tag of task.tags; track tag) {
+              <span class="tag-pill">{{ tag }}</span>
+            }
+            @if (!task.tags.length) {
+              <span class="empty-hint">No tags assigned</span>
+            }
+          </div>
+        </section>
+
+        <!-- Time Tracking Section -->
+        <section class="form-section">
+          <div class="section-header-flex">
+            <h3 class="section-title">Time Tracking</h3>
+            <span class="total-hours-badge">
+              Total: {{ (getTotalLoggedMinutes() / 60) | number: '1.1-1' }} hrs
+            </span>
+          </div>
+
+          <div class="time-logs-list">
+            @for (log of task.timeLogs; track log.id) {
+              <div class="time-log-row">
+                <div class="log-indicator">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                </div>
+                <div class="log-info">
+                  <div class="log-meta">
+                    <span class="log-time">{{ log.minutesSpent }} min ({{ (log.minutesSpent / 60) | number: '1.1-1' }}h)</span>
+                    <span class="log-date">{{ log.loggedDate }}</span>
+                  </div>
+                  @if (log.description) {
+                    <p class="log-text">{{ log.description }}</p>
+                  }
+                </div>
+              </div>
+            } @empty {
+              <div class="logs-empty">
+                <span>No time logs recorded yet.</span>
+                <button type="button" class="link-btn" (click)="onLogTime()">+ Log time now</button>
+              </div>
+            }
+          </div>
+        </section>
+
+        <!-- Discussion / Comments Section -->
+        <section class="form-section discussion-section">
+          <div class="section-header-flex">
+            <h3 class="section-title">Discussion</h3>
+            <span class="comment-count-badge">
+              {{ comments.length }} {{ comments.length === 1 ? 'comment' : 'comments' }}
+            </span>
+          </div>
+
+          <!-- New Comment Composer -->
+          <div class="comment-composer">
+            <div class="composer-avatar" [title]="currentUser.fullName || currentUser.userName">
+              {{ getAuthorInitial(currentUser) }}
+            </div>
+            <div class="composer-box">
+              <textarea
+                id="input-task-comment"
+                class="comment-textarea"
+                rows="2"
+                placeholder="Add a comment... (Ctrl+Enter to post)"
+                [value]="newCommentText"
+                (input)="onCommentInput($any($event.target).value)"
+                (keydown.control.enter)="onAddComment()"
+                aria-label="Add a comment"
+              ></textarea>
+              <div class="composer-actions">
+                <button
+                  type="button"
+                  id="btn-post-comment"
+                  class="btn-post-comment"
+                  [disabled]="!newCommentText.trim()"
+                  (click)="onAddComment()"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                  </svg>
+                  <span>Comment</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Comments Timeline List -->
+          <div class="comments-list">
+            @for (comment of comments; track comment.id) {
+              <div class="comment-item">
+                <div class="comment-avatar" [title]="comment.author.fullName || comment.author.userName">
+                  {{ getAuthorInitial(comment.author) }}
+                </div>
+                <div class="comment-content-wrapper">
+                  <div class="comment-header">
+                    <span class="comment-author">{{ comment.author.fullName || comment.author.userName }}</span>
+                    <span class="comment-time">{{ comment.createdAt | date: 'medium' }}</span>
+                  </div>
+                  <div class="comment-bubble">
+                    <p class="comment-text">{{ comment.content }}</p>
+                  </div>
+                </div>
+              </div>
+            } @empty {
+              <div class="comments-empty">
+                <span>No comments yet. Start the discussion!</span>
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+
+      <!-- Right Column: People, Planning & Auditing -->
+      <aside class="form-side-pane">
+        <!-- People Section -->
+        <section class="side-section">
+          <h4 class="side-title">People</h4>
+          <div class="person-field">
+            <span class="field-label">Assigned To</span>
+            <div class="person-row">
+              <span class="person-avatar">{{ getAssigneeInitial() }}</span>
+              <div class="person-details">
+                <span class="person-name">{{ getAssigneeName() }}</span>
+                @if (task.assignee?.email; as email) {
+                  <span class="person-sub">{{ email }}</span>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="person-field">
+            <span class="field-label">Created By</span>
+            <div class="person-row">
+              <span class="person-avatar creator-avatar">{{ getCreatorInitial() }}</span>
+              <div class="person-details">
+                <span class="person-name">{{ getCreatorName() }}</span>
+                @if (task.createdBy.email) {
+                  <span class="person-sub">{{ task.createdBy.email }}</span>
+                }
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Planning Section -->
+        <section class="side-section">
+          <h4 class="side-title">Planning</h4>
+          <div class="attr-row">
+            <span class="attr-label">Priority</span>
+            <span class="priority-tag priority-{{ task.priority.toLowerCase() }}">
+              {{ task.priority }}
+            </span>
+          </div>
+
+          <div class="attr-row">
+            <span class="attr-label">Deadline</span>
+            <span class="attr-value">
+              {{ (task.deadline | date: 'mediumDate') || 'None' }}
+            </span>
+          </div>
+        </section>
+
+        <!-- Audit Details Section -->
+        <section class="side-section">
+          <h4 class="side-title">Audit History</h4>
+          <div class="attr-row">
+            <span class="attr-label">Created At</span>
+            <span class="attr-value date-val">{{ task.createdAt | date: 'short' }}</span>
+          </div>
+          <div class="attr-row">
+            <span class="attr-label">Updated At</span>
+            <span class="attr-value date-val">{{ (task.updatedAt | date: 'short') || 'Never' }}</span>
+          </div>
+          <div class="attr-row">
+            <span class="attr-label">Full ID</span>
+            <span class="attr-value id-code" title="{{ task.id }}">{{ task.id }}</span>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </aside>
+}
