@@ -1,0 +1,198 @@
+<div class="workspace-bar-container" id="workspace-selector-bar">
+  <!-- Active Workspace Identity -->
+  <div class="active-workspace-card">
+    <div
+      class="workspace-badge"
+      [style.background-color]="selectedWorkspace?.color || '#0078D4'"
+      [attr.aria-label]="selectedWorkspace?.name || 'Workspace'"
+    >
+      <span class="badge-code">{{ selectedWorkspace?.code || 'WS' }}</span>
+    </div>
+
+    <div class="workspace-meta">
+      <div class="workspace-heading-row">
+        <h3 class="workspace-name" id="selected-workspace-name">
+          {{ selectedWorkspace?.name || 'Select Workspace' }}
+        </h3>
+        @if (selectedWorkspace?.role; as role) {
+          <span class="workspace-role-pill" [class]="'role-' + role.toLowerCase()">
+            {{ role }}
+          </span>
+        }
+        @if (selectedWorkspace?.isDefault) {
+          <span class="workspace-default-tag">Default</span>
+        }
+      </div>
+
+      <div class="workspace-subtext-row">
+        <span class="workspace-code-tag">Code: {{ selectedWorkspace?.code || 'N/A' }}</span>
+        <span class="meta-dot">•</span>
+        <span class="workspace-stat">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          {{ selectedWorkspace?.memberCount || 1 }} members
+        </span>
+        <span class="meta-dot">•</span>
+        <span class="workspace-stat">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 11 12 14 22 4"></polyline>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+          </svg>
+          {{ selectedWorkspace?.taskCount || 0 }} tasks
+        </span>
+      </div>
+      @if (selectedWorkspace?.description) {
+        <p class="workspace-desc">{{ selectedWorkspace!.description }}</p>
+      }
+    </div>
+  </div>
+
+  <!-- Quick Workspace Switcher Pills & Dropdown Actions -->
+  <div class="workspace-controls-section">
+    <!-- Quick Switcher Tabs -->
+    <div class="quick-switcher-pills" role="tablist" aria-label="Available Workspaces">
+      @for (ws of workspaces; track ws.id) {
+        <button
+          type="button"
+          class="ws-pill-btn"
+          [class.active]="ws.id === selectedWorkspace?.id"
+          (click)="onSelectWorkspace(ws, $event)"
+          [attr.id]="'ws-pill-' + ws.id"
+          role="tab"
+          [attr.aria-selected]="ws.id === selectedWorkspace?.id"
+          [title]="ws.description"
+        >
+          <span
+            class="pill-color-indicator"
+            [style.background-color]="ws.color"
+          ></span>
+          <span class="pill-code">{{ ws.code }}</span>
+          <span class="pill-name">{{ ws.name }}</span>
+        </button>
+      }
+    </div>
+
+    <!-- Dropdown Switcher Button & Menu -->
+    <div class="ws-dropdown-container">
+      <button
+        type="button"
+        class="ws-dropdown-btn"
+        (click)="toggleDropdown($event)"
+        [class.active]="isDropdownOpen"
+        id="ws-dropdown-trigger"
+        aria-haspopup="true"
+        [attr.aria-expanded]="isDropdownOpen"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+        </svg>
+        <span>Workspaces</span>
+        <svg
+          class="chevron-icon"
+          [class.rotated]="isDropdownOpen"
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+
+      <!-- Dropdown Flyout Menu -->
+      @if (isDropdownOpen) {
+        <div class="ws-dropdown-menu" role="menu" id="ws-dropdown-menu">
+          <div class="dropdown-header">
+            <span class="dropdown-title">Select Active Workspace</span>
+            <span class="dropdown-count">{{ filteredWorkspaces.length }} of {{ workspaces.length }}</span>
+          </div>
+
+          <!-- Filter Search Box -->
+          <div class="search-box-wrap">
+            <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+              type="text"
+              class="ws-search-input"
+              placeholder="Search workspaces..."
+              [value]="searchQuery"
+              (input)="onSearchInput($event)"
+              (click)="$event.stopPropagation()"
+              id="ws-search-input"
+            />
+          </div>
+
+          <!-- Workspaces List -->
+          <div class="ws-list" role="listbox">
+            @for (ws of filteredWorkspaces; track ws.id) {
+              <button
+                type="button"
+                class="ws-list-item"
+                [class.selected]="ws.id === selectedWorkspace?.id"
+                (click)="onSelectWorkspace(ws, $event)"
+                role="option"
+                [attr.aria-selected]="ws.id === selectedWorkspace?.id"
+                [attr.id]="'ws-item-' + ws.id"
+              >
+                <div class="item-left">
+                  <span
+                    class="item-icon-badge"
+                    [style.background-color]="ws.color"
+                  >
+                    {{ ws.code }}
+                  </span>
+                  <div class="item-text-wrap">
+                    <div class="item-title-row">
+                      <span class="item-name">{{ ws.name }}</span>
+                      <span class="item-role-pill" [class]="'role-' + ws.role.toLowerCase()">
+                        {{ ws.role }}
+                      </span>
+                    </div>
+                    <span class="item-desc">{{ ws.description }}</span>
+                  </div>
+                </div>
+
+                <div class="item-right">
+                  @if (ws.id === selectedWorkspace?.id) {
+                    <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0078D4" stroke-width="2.5">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  }
+                </div>
+              </button>
+            } @empty {
+              <div class="no-workspaces-found">
+                <span>No workspaces matching "{{ searchQuery }}"</span>
+              </div>
+            }
+          </div>
+
+          <!-- Dropdown Footer Actions -->
+          <div class="dropdown-footer">
+            <button
+              type="button"
+              class="btn-new-workspace"
+              (click)="onCreateWorkspace($event)"
+              id="btn-create-workspace"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>New Workspace (Mock)</span>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
