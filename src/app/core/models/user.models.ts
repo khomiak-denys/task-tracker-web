@@ -23,3 +23,11 @@ export interface ChangePasswordRequest {
   currentPassword: string;
   newPassword: string;
 }
+
+/** Item in paginated user list returned by GET /api/v1/users */
+export interface UserResult {
+  id: string;
+  email: string;
+  userName: string;
+  fullName: string | null;
+}
