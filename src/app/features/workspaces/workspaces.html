@@ -1,0 +1,276 @@
+<div class="workspaces-page-container">
+  <!-- Azure DevOps Top Navigation Bar -->
+  <header class="workspaces-header">
+    <div class="header-left">
+      <div class="azure-brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 7V10C2 16.5 6.84 22.74 12 24C17.16 22.74 22 16.5 22 10V7L12 2Z"
+                fill="url(#ws-shield)" opacity="0.95"/>
+          <path d="M9 12L11 14L15 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="ws-shield" x1="2" y1="2" x2="22" y2="24">
+              <stop stop-color="#0078D4"/>
+              <stop offset="1" stop-color="#00BCF2"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span class="header-title">Task Tracker</span>
+      </div>
+      <div class="header-breadcrumb">
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">Workspaces</span>
+      </div>
+    </div>
+
+    <div class="header-right">
+      @if (state$ | async; as state) {
+        <div class="user-menu-container">
+          <button
+            type="button"
+            class="avatar-btn"
+            (click)="toggleDropdown()"
+            [class.active]="state.dropdownOpen"
+            aria-label="User account menu"
+            aria-haspopup="true"
+            [attr.aria-expanded]="state.dropdownOpen"
+            id="user-avatar-btn"
+          >
+            <span class="avatar-letter">{{ state.userInitial }}</span>
+          </button>
+
+          @if (state.dropdownOpen) {
+            <div class="user-dropdown" role="menu" id="user-dropdown-menu">
+              <div class="dropdown-items">
+                <button
+                  type="button"
+                  class="dropdown-item"
+                  (click)="onProfile()"
+                  role="menuitem"
+                  id="menu-item-profile"
+                >
+                  <svg class="dropdown-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  <span>Profile</span>
+                </button>
+
+                @if (authService.isAdmin()) {
+                  <button
+                    type="button"
+                    class="dropdown-item"
+                    (click)="onAdmin()"
+                    role="menuitem"
+                    id="menu-item-admin"
+                  >
+                    <svg class="dropdown-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="2" y="3" width="20" height="18" rx="2" ry="2"></rect>
+                      <line x1="9" y1="3" x2="9" y2="21"></line>
+                    </svg>
+                    <span>Admin Console</span>
+                  </button>
+                }
+
+                <button
+                  type="button"
+                  class="dropdown-item dropdown-item-danger"
+                  (click)="onLogout()"
+                  role="menuitem"
+                  id="menu-item-logout"
+                >
+                  <svg class="dropdown-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                  </svg>
+                  <span>Sign out</span>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </header>
+
+  <!-- Main Workspaces Content -->
+  <main class="workspaces-content">
+    <div class="workspaces-hero">
+      <div class="hero-text-block">
+        <h1 class="hero-title">Workspaces</h1>
+        <p class="hero-subtitle">
+          Select a workspace where you are a member to view tasks, boards, and team velocity.
+        </p>
+      </div>
+
+      <div class="hero-actions-bar">
+        @if (state$ | async; as state) {
+          <div class="search-input-wrapper">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Filter your workspaces..."
+              [ngModel]="state.searchQuery"
+              (ngModelChange)="updateSearch($event)"
+              id="search-workspaces-input"
+            />
+          </div>
+        }
+
+        <button
+          type="button"
+          class="btn-primary"
+          (click)="openCreateModal()"
+          id="btn-new-workspace"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>New Workspace</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Workspaces Grid -->
+    <section class="workspaces-grid" aria-label="Member Workspaces">
+      @for (ws of filteredWorkspaces$ | async; track ws.id) {
+        <article
+          class="workspace-card"
+          [attr.id]="'workspace-card-' + ws.id"
+          (click)="onSelectWorkspace(ws)"
+        >
+          <div class="card-top-row">
+            <div
+              class="workspace-badge"
+              [style.background-color]="ws.color"
+              [attr.aria-label]="ws.name"
+            >
+              <span class="badge-code">{{ ws.code }}</span>
+            </div>
+
+            <div class="card-badge-group">
+              <span class="workspace-role-pill" [class]="'role-' + ws.role.toLowerCase()">
+                {{ ws.role }}
+              </span>
+              @if (ws.isDefault) {
+                <span class="workspace-default-tag">Default</span>
+              }
+            </div>
+          </div>
+
+          <div class="card-info">
+            <h2 class="workspace-card-title">{{ ws.name }}</h2>
+            <p class="workspace-card-desc">{{ ws.description }}</p>
+          </div>
+
+          <div class="card-meta-row">
+            <span class="card-meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              {{ ws.memberCount }} members
+            </span>
+
+            <span class="meta-separator">•</span>
+
+            <span class="card-meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 11 12 14 22 4"></polyline>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+              {{ ws.taskCount }} tasks
+            </span>
+          </div>
+
+          <div class="card-footer">
+            <button
+              type="button"
+              class="btn-open-boards"
+              (click)="onSelectWorkspace(ws); $event.stopPropagation()"
+              [attr.id]="'btn-open-' + ws.id"
+            >
+              <span>Open Boards</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+        </article>
+      } @empty {
+        <div class="no-workspaces-box">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+          <h3>No matching workspaces found</h3>
+          <p>Try searching for a different keyword or create a new workspace.</p>
+        </div>
+      }
+    </section>
+  </main>
+
+  <!-- Create Workspace Modal -->
+  @if ((state$ | async)?.isCreateModalOpen) {
+    <div class="modal-overlay" (click)="closeCreateModal()"></div>
+    <div class="azure-modal" role="dialog" aria-modal="true" aria-labelledby="create-ws-title">
+      <div class="modal-header">
+        <h2 class="modal-title" id="create-ws-title">Create New Workspace</h2>
+        <button
+          type="button"
+          class="modal-close-btn"
+          (click)="closeCreateModal()"
+          aria-label="Close dialog"
+        >
+          ✕
+        </button>
+      </div>
+
+      <form [formGroup]="createForm" (ngSubmit)="submitCreateWorkspace()" class="azure-modal-form">
+        <div class="form-field">
+          <label for="ws-name-input">Workspace Name *</label>
+          <input
+            type="text"
+            id="ws-name-input"
+            class="azure-input"
+            formControlName="name"
+            placeholder="e.g. Analytics Platform"
+          />
+          @if (createForm.get('name')?.touched && createForm.get('name')?.errors?.['required']) {
+            <span class="field-error">Name is required</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label for="ws-desc-input">Description *</label>
+          <textarea
+            id="ws-desc-input"
+            class="azure-textarea"
+            formControlName="description"
+            rows="3"
+            placeholder="Briefly describe what this workspace covers..."
+          ></textarea>
+          @if (createForm.get('description')?.touched && createForm.get('description')?.errors?.['required']) {
+            <span class="field-error">Description is required</span>
+          }
+        </div>
+
+        <div class="modal-footer-actions">
+          <button type="button" class="btn-secondary" (click)="closeCreateModal()">
+            Cancel
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="createForm.invalid">
+            Create & Enter Workspace
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</div>
