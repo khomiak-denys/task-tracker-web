@@ -44,13 +44,7 @@ a {
   }
 }
 
-button {
-  font-family: inherit;
-}
-
-input,
-textarea,
-select {
+button, input, textarea, select {
   font-family: inherit;
 }
 
@@ -58,3 +52,405 @@ select {
   background: rgba(0, 120, 212, 0.2);
   color: #323130;
 }
+
+/* ================================================================
+   Shared Azure Form & Modal Primitives
+   ================================================================ */
+
+.azure-input,
+.azure-textarea,
+.azure-select {
+  font-size: 0.8125rem;
+  border: 1px solid #edebe9;
+  border-radius: 2px;
+  background: #ffffff;
+  color: #323130;
+
+  &:focus {
+    outline: none;
+    border-color: #0078d4;
+  }
+}
+
+.azure-select {
+  height: 30px;
+  padding: 0 1rem 0 0.5rem;
+  cursor: pointer;
+}
+
+.azure-input,
+.azure-textarea {
+  width: 100%;
+  padding: 0.375rem 0.5rem;
+  box-sizing: border-box;
+}
+
+.azure-textarea {
+  resize: vertical;
+}
+
+.field-error-slot {
+  min-height: 1.125rem;
+  display: flex;
+  align-items: center;
+  margin-top: 0.125rem;
+
+  .field-error {
+    font-size: 0.75rem;
+    color: #d13438;
+    font-weight: 500;
+  }
+}
+
+.btn-primary {
+  height: 30px;
+  padding: 0 0.875rem;
+  background: #0078d4;
+  color: #ffffff;
+  border: 1px solid #0078d4;
+  border-radius: 2px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: #106ebe;
+  }
+}
+
+.btn-secondary {
+  height: 30px;
+  padding: 0 0.75rem;
+  background: transparent;
+  color: #323130;
+  border: 1px solid #edebe9;
+  border-radius: 2px;
+  font-size: 0.8125rem;
+  cursor: pointer;
+
+  &:hover {
+    background: #f3f2f1;
+  }
+}
+
+.action-btn {
+  height: 24px;
+  padding: 0 0.4375rem;
+  border: 1px solid #edebe9;
+  background: #ffffff;
+  color: #323130;
+  font-size: 0.75rem;
+  border-radius: 2px;
+  cursor: pointer;
+
+  &:hover {
+    background: #f3f2f1;
+  }
+
+  &.action-btn-primary {
+    color: #0078d4;
+  }
+
+  &.action-btn-success {
+    color: #107c10;
+  }
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1200;
+}
+
+.azure-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 460px;
+  max-width: 90vw;
+  background: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  z-index: 1250;
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #edebe9;
+
+    .modal-title {
+      margin: 0;
+      font-size: 0.9375rem;
+      font-weight: 600;
+    }
+
+    .modal-close-btn {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+      color: #605e5c;
+    }
+  }
+
+  .azure-modal-form {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1875rem;
+
+    label {
+      font-size: 0.8125rem;
+      font-weight: 600;
+
+      .required {
+        color: #d13438;
+      }
+    }
+  }
+
+  .form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.625rem;
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.375rem;
+    padding-top: 0.625rem;
+    border-top: 1px solid #edebe9;
+  }
+
+  .time-presets-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.375rem;
+    margin-bottom: 0.375rem;
+  }
+
+  .time-preset-pill {
+    padding: 0.3125rem 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid #d2d0ce;
+    border-radius: 2px;
+    background: #ffffff;
+    color: #323130;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s ease;
+
+    &:hover:not(.active) {
+      background: #f3f2f1;
+      border-color: #a19f9d;
+    }
+
+    &.active {
+      background: #eff6fc;
+      color: #0078d4;
+      border-color: #0078d4;
+      box-shadow: 0 0 0 1px #0078d4 inset;
+    }
+  }
+}
+
+
+/* ================================================================
+   Shared Data Table & Status Primitives
+   ================================================================ */
+
+.azure-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+
+  th {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    background: #f8f9fa;
+    border-bottom: 2px solid #edebe9;
+    color: #605e5c;
+    font-size: 0.75rem;
+  }
+
+  td {
+    padding: 0.625rem 0.75rem;
+    border-bottom: 1px solid #edebe9;
+    vertical-align: middle;
+  }
+
+  .table-row {
+    cursor: pointer;
+    &:hover { background: #f3f9fd; }
+  }
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.1875rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #edebe9;
+
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #605e5c; }
+  &.status-inprogress { background: #eff6fc; color: #0078d4; .status-dot { background: #0078d4; } }
+  &.status-inreview { background: #f3f0f8; color: #8764b8; .status-dot { background: #8764b8; } }
+  &.status-done { background: #dff6dd; color: #107c10; .status-dot { background: #107c10; } }
+  &.status-cancelled { background: #fde7e9; color: #a80000; .status-dot { background: #a80000; } }
+}
+
+.empty-muted { color: #a19f9d; }
+.empty-row { text-align: center; padding: 2rem !important; }
+.empty-state { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; color: #a19f9d; }
+.empty-title { font-size: 0.9375rem; font-weight: 600; color: #201f1e; margin: 0; }
+.empty-subtitle { font-size: 0.8125rem; margin: 0; }
+
+/* ================================================================
+   Shared Priority, Search & Analytics Widgets
+   ================================================================ */
+
+.priority-pill,
+.priority-badge {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.0625rem 0.375rem;
+  border-radius: 2px;
+
+  &.priority-critical { background: #fde7e9; color: #a80000; }
+  &.priority-high { background: #fff4ce; color: #794a00; }
+  &.priority-medium { background: #eff6fc; color: #004578; }
+  &.priority-low { background: #f3f2f1; color: #605e5c; }
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #d2d0ce;
+  border-radius: 2px;
+  background: #ffffff;
+  width: 100%;
+
+  .search-icon { color: #605e5c; }
+  input {
+    border: none;
+    outline: none;
+    font-size: 0.8125rem;
+    width: 100%;
+    color: #201f1e;
+    &::placeholder { color: #a19f9d; }
+  }
+}
+
+.stats-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.625rem;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0.625rem 0.75rem;
+  background: #ffffff;
+  border: 1px solid #e1dfdd;
+  border-left: 3px solid #8a8886;
+  border-radius: 2px;
+
+  &.stat-total-scope { border-left-color: #201f1e; }
+  &.stat-filtered { border-left-color: #8a8886; }
+  &.stat-in-progress { border-left-color: #0078d4; }
+  &.stat-in-review { border-left-color: #8764b8; }
+  &.stat-done { border-left-color: #107c10; }
+  &.stat-critical { border-left-color: #a80000; }
+  &.stat-rate { border-left-color: #008272; }
+}
+
+.stat-card-label { font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; color: #605e5c; }
+.stat-card-value { font-size: 1.25rem; font-weight: 700; color: #201f1e; line-height: 1.2; margin: 0.125rem 0; }
+.stat-card-hint { font-size: 0.6875rem; color: #a19f9d; }
+
+.analytics-widgets-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.analytics-widget-card {
+  background: #ffffff;
+  border: 1px solid #e1dfdd;
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.widget-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #201f1e;
+  margin: 0 0 0.875rem;
+}
+
+.distribution-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.dist-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #201f1e;
+  margin-bottom: 0.1875rem;
+
+  .dist-nums { color: #605e5c; font-weight: 400; }
+}
+
+.dist-track {
+  width: 100%;
+  height: 6px;
+  background: #edebe9;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dist-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+
+  &.fill-todo { background: #8a8886; }
+  &.fill-inprogress { background: #0078d4; }
+  &.fill-inreview { background: #8764b8; }
+  &.fill-done { background: #107c10; }
+  &.fill-cancelled { background: #a80000; }
+
+  &.fill-critical { background: #a80000; }
+  &.fill-high { background: #d83b01; }
+  &.fill-medium { background: #0078d4; }
+  &.fill-low { background: #8a8886; }
+}
+
+
