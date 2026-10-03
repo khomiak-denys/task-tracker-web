@@ -1,22 +1,37 @@
-<div class="profile-container">
+<div class="profile-container" [class.is-embedded]="embedded">
   <!-- Top Navigation -->
-  <header class="profile-header">
-    <div class="header-left">
-      <a routerLink="/" class="back-link" id="link-back-dashboard">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="19" y1="12" x2="5" y2="12"></line>
-          <polyline points="12 19 5 12 12 5"></polyline>
-        </svg>
-        <span>Back to Dashboard</span>
-      </a>
-      <span class="header-divider">/</span>
-      <h1 class="header-title">Profile</h1>
-    </div>
+  @if (!embedded) {
+    <header class="profile-header">
+      <div class="header-left">
+        <a routerLink="/" class="back-link" id="link-back-dashboard">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span>Back to Dashboard</span>
+        </a>
+        <span class="header-divider">/</span>
+        <h1 class="header-title">Profile</h1>
+      </div>
 
-    <div class="header-right">
-      <button type="button" class="btn-signout" (click)="onLogout()" id="btn-profile-logout">Sign out</button>
-    </div>
-  </header>
+      <div class="header-right">
+        <button type="button" class="btn-signout" (click)="onLogout()" id="btn-profile-logout">Sign out</button>
+      </div>
+    </header>
+  } @else {
+    <header class="embedded-profile-header">
+      <div class="embedded-header-left">
+        <span class="embedded-tag">User Profile Details</span>
+      </div>
+      <button type="button" class="btn-close-embedded" (click)="closeRequested.emit()" title="Close details">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </header>
+  }
+
 
   <main class="profile-main">
     @if (vm$ | async; as vm) {
@@ -178,12 +193,13 @@
                         formControlName="userName"
                         placeholder="Username"
                       />
-                      @if (profileForm.get('userName')?.hasError('required') && profileForm.get('userName')?.touched) {
-                        <span class="field-error">Username is required</span>
-                      }
-                      @if (profileForm.get('userName')?.hasError('minlength') && profileForm.get('userName')?.touched) {
-                        <span class="field-error">Username must be at least 3 characters</span>
-                      }
+                      <div class="field-error-slot" aria-live="polite">
+                        @if (profileForm.get('userName')?.hasError('required') && profileForm.get('userName')?.touched) {
+                          <span class="field-error">Username is required</span>
+                        } @else if (profileForm.get('userName')?.hasError('minlength') && profileForm.get('userName')?.touched) {
+                          <span class="field-error">Username must be at least 3 characters</span>
+                        }
+                      </div>
                     </div>
 
                     <div class="field-group">
@@ -309,9 +325,11 @@
                             }
                           </button>
                         </div>
-                        @if (passwordForm.get('currentPassword')?.hasError('required') && passwordForm.get('currentPassword')?.touched && !passwordForm.get('currentPassword')?.hasError('serverError')) {
-                          <span class="field-error">Current password is required</span>
-                        }
+                        <div class="field-error-slot" aria-live="polite">
+                          @if (passwordForm.get('currentPassword')?.hasError('required') && passwordForm.get('currentPassword')?.touched && !passwordForm.get('currentPassword')?.hasError('serverError')) {
+                            <span class="field-error">Current password is required</span>
+                          }
+                        </div>
                       </div>
 
                       <div class="field-group">
@@ -352,12 +370,13 @@
                             }
                           </button>
                         </div>
-                        @if (passwordForm.get('newPassword')?.hasError('required') && passwordForm.get('newPassword')?.touched && !passwordForm.get('newPassword')?.hasError('serverError')) {
-                          <span class="field-error">New password is required</span>
-                        }
-                        @if (passwordForm.get('newPassword')?.hasError('minlength') && passwordForm.get('newPassword')?.touched && !passwordForm.get('newPassword')?.hasError('serverError')) {
-                          <span class="field-error">New password must be at least 6 characters</span>
-                        }
+                        <div class="field-error-slot" aria-live="polite">
+                          @if (passwordForm.get('newPassword')?.hasError('required') && passwordForm.get('newPassword')?.touched && !passwordForm.get('newPassword')?.hasError('serverError')) {
+                            <span class="field-error">New password is required</span>
+                          } @else if (passwordForm.get('newPassword')?.hasError('minlength') && passwordForm.get('newPassword')?.touched && !passwordForm.get('newPassword')?.hasError('serverError')) {
+                            <span class="field-error">New password must be at least 6 characters</span>
+                          }
+                        </div>
                       </div>
 
                       <div class="field-group">
@@ -401,11 +420,13 @@
                             }
                           </button>
                         </div>
-                        @if (passwordForm.get('confirmNewPassword')?.hasError('required') && passwordForm.get('confirmNewPassword')?.touched && !passwordForm.get('confirmNewPassword')?.hasError('serverError')) {
-                          <span class="field-error">Please confirm your new password</span>
-                        } @else if (passwordForm.hasError('passwordMismatch') && passwordForm.get('confirmNewPassword')?.touched) {
-                          <span class="field-error">Passwords do not match</span>
-                        }
+                        <div class="field-error-slot" aria-live="polite">
+                          @if (passwordForm.get('confirmNewPassword')?.hasError('required') && passwordForm.get('confirmNewPassword')?.touched && !passwordForm.get('confirmNewPassword')?.hasError('serverError')) {
+                            <span class="field-error">Please confirm your new password</span>
+                          } @else if (passwordForm.hasError('passwordMismatch') && passwordForm.get('confirmNewPassword')?.touched) {
+                            <span class="field-error">Passwords do not match</span>
+                          }
+                        </div>
                       </div>
 
                       <div class="form-actions">
@@ -500,7 +521,7 @@
                   </svg>
                 </div>
                 <div class="item-header-text">
-                  <h2 class="item-title">Account & Session Metadata</h2>
+                  <h2 class="item-title">Account Metadata</h2>
                   <p class="item-desc">Diagnostic and identity data associated with this account.</p>
                 </div>
               </div>
@@ -547,16 +568,6 @@
                           {{ vm.profile?.emailConfirmed ? 'Verified' : 'Unconfirmed' }}
                         </span>
                       </span>
-                    </div>
-
-                    <div class="meta-cell">
-                      <span class="cell-label">Session Issued At</span>
-                      <span class="cell-value">{{ vm.tokenIssuedAt }}</span>
-                    </div>
-
-                    <div class="meta-cell">
-                      <span class="cell-label">Session Token Expires At</span>
-                      <span class="cell-value">{{ vm.tokenExpiresAt }}</span>
                     </div>
                   </div>
                 </div>

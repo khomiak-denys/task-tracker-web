@@ -92,4 +92,42 @@ describe('UserService', () => {
     expect(req.request.withCredentials).toBeTrue();
     req.flush(null);
   });
+
+  it('getAll should send GET request with pagination parameters', (done) => {
+    const mockPagination = {
+      items: [
+        {
+          id: 'user-123',
+          email: 'test@example.com',
+          userName: 'testuser',
+          fullName: 'Test User',
+        },
+      ],
+      page: 1,
+      pageSize: 10,
+      totalCount: 1,
+    };
+
+    service.getAll(1, 10).subscribe((res) => {
+      expect(res).toEqual(mockPagination);
+      done();
+    });
+
+    const req = httpTesting.expectOne(`${baseUrl}?page=1&pageSize=10`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.withCredentials).toBeTrue();
+    req.flush(mockPagination);
+  });
+
+  it('deleteUser should send DELETE request to user endpoint', (done) => {
+    service.deleteUser('user-123').subscribe(() => {
+      done();
+    });
+
+    const req = httpTesting.expectOne(`${baseUrl}/user-123`);
+    expect(req.request.method).toBe('DELETE');
+    expect(req.request.withCredentials).toBeTrue();
+    req.flush(null);
+  });
 });
+

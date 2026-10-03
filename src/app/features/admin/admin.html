@@ -1,0 +1,927 @@
+<div class="admin-container" id="admin-console">
+  <!-- Azure DevOps Administration Header -->
+  <header class="admin-header">
+    <div class="header-left">
+      <div class="azure-brand">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M12 2L2 7V10C2 16.5 6.84 22.74 12 24C17.16 22.74 22 16.5 22 10V7L12 2Z"
+                fill="url(#admin-header-shield)" opacity="0.95"/>
+          <path d="M9 12L11 14L15 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="admin-header-shield" x1="2" y1="2" x2="22" y2="24">
+              <stop stop-color="#0078D4"/>
+              <stop offset="1" stop-color="#00BCF2"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span class="header-title">Task Tracker</span>
+      </div>
+      <nav class="header-breadcrumb" aria-label="Breadcrumb">
+        <span class="breadcrumb-separator">/</span>
+        <span>Organization Settings</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">Admin Console</span>
+      </nav>
+    </div>
+
+    <div class="header-right">
+      <a routerLink="/" class="cmd-btn cmd-btn-secondary" id="btn-back-to-boards">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>Back to Boards</span>
+      </a>
+      <a routerLink="/profile" class="cmd-btn cmd-btn-secondary" id="btn-admin-my-profile">
+        <span>My Profile</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Navigation Command Bar -->
+  <section class="admin-command-bar" aria-label="Admin Navigation">
+    @if (state$ | async; as state) {
+      <div class="command-left">
+        <nav class="nav-tabs-group" role="tablist">
+          <button
+            type="button"
+            class="tab-btn"
+            [class.active]="state.activeTab === 'users'"
+            (click)="setActiveTab('users')"
+            role="tab"
+            [attr.aria-selected]="state.activeTab === 'users'"
+            id="admin-tab-users"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span>Users Directory</span>
+            <span class="tab-badge">{{ state.usersTotalCount }}</span>
+          </button>
+
+          <button
+            type="button"
+            class="tab-btn"
+            [class.active]="state.activeTab === 'tasks'"
+            (click)="setActiveTab('tasks')"
+            role="tab"
+            [attr.aria-selected]="state.activeTab === 'tasks'"
+            id="admin-tab-tasks"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="6" x2="21" y2="6"></line>
+              <line x1="8" y1="12" x2="21" y2="12"></line>
+              <line x1="8" y1="18" x2="21" y2="18"></line>
+              <line x1="3" y1="6" x2="3.01" y2="6"></line>
+              <line x1="3" y1="12" x2="3.01" y2="12"></line>
+              <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+            <span>System Tasks</span>
+            <span class="tab-badge">{{ state.tasksTotalCount }}</span>
+          </button>
+
+          <button
+            type="button"
+            class="tab-btn"
+            [class.active]="state.activeTab === 'workspaces'"
+            (click)="setActiveTab('workspaces')"
+            role="tab"
+            [attr.aria-selected]="state.activeTab === 'workspaces'"
+            id="admin-tab-workspaces"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+            </svg>
+            <span>Workspaces</span>
+            <span class="tab-badge">{{ state.workspaces.length }}</span>
+          </button>
+        </nav>
+      </div>
+
+      <div class="command-right">
+        <span class="admin-badge">Admin Privileges Active</span>
+      </div>
+    }
+  </section>
+
+  <!-- Main Content Area -->
+  <main class="admin-main">
+    @if (state$ | async; as state) {
+      <!-- 1. USERS DIRECTORY VIEW -->
+      @if (state.activeTab === 'users') {
+        <section class="admin-card" id="users-directory-panel" aria-label="Users Directory">
+          <!-- Filter & Controls Toolbar -->
+          <div class="toolbar-row">
+            <div class="search-box filter-search">
+              <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input
+                type="text"
+                placeholder="Search users by name, username, or email..."
+                [value]="state.userSearchQuery"
+                (input)="onUserSearchChange($any($event.target).value)"
+                id="input-search-users"
+              />
+            </div>
+
+            <button type="button" class="btn-secondary" (click)="loadUsers()" [disabled]="state.usersLoading" id="btn-refresh-users">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 4v6h-6"></path>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+              </svg>
+              <span>Refresh</span>
+            </button>
+          </div>
+
+          <!-- Users Table -->
+          <div class="table-responsive">
+            <table class="azure-table" id="users-table">
+              <thead>
+                <tr>
+                  <th scope="col">User & Identity</th>
+                  <th scope="col">Email Address</th>
+                  <th scope="col" style="width: 220px;">User ID</th>
+                  <th scope="col" style="width: 260px; text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (state.usersLoading) {
+                  <tr>
+                    <td colspan="4" class="empty-row">
+                      <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Loading users directory...</p>
+                      </div>
+                    </td>
+                  </tr>
+                } @else {
+                  @for (user of filteredUsers$ | async; track user.id) {
+                    <tr class="table-row" [attr.id]="'user-row-' + user.id">
+                      <td>
+                        <div class="user-identity-cell">
+                          <div class="user-avatar-circle">{{ getUserInitial(user) }}</div>
+                          <div class="user-name-box">
+                            <span class="user-fullname">{{ user.fullName || user.userName }}</span>
+                            <span class="user-username">&#64;{{ user.userName }}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="user-email-text">{{ user.email }}</span>
+                      </td>
+                      <td>
+                        <span class="user-id-mono" title="{{ user.id }}">{{ user.id }}</span>
+                      </td>
+                      <td style="text-align: right;">
+                        <div class="table-actions-group">
+                          <button
+                            type="button"
+                            class="action-btn action-btn-primary"
+                            (click)="openProfileDrawer(user)"
+                            [attr.id]="'btn-view-profile-' + user.id"
+                            title="View and update user profile details"
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                              <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <span>Profile</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            class="action-btn"
+                            (click)="openRolesModal(user)"
+                            [attr.id]="'btn-roles-' + user.id"
+                            title="Assign or remove system roles"
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                            </svg>
+                            <span>Roles</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            class="action-btn action-btn-danger"
+                            (click)="openDeleteModal(user)"
+                            [attr.id]="'btn-delete-user-' + user.id"
+                            title="Delete this user permanently"
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <polyline points="3 6 5 6 21 6"></polyline>
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="4" class="empty-row">
+                        <div class="empty-state">
+                          <p class="empty-title">No users found</p>
+                          <p class="empty-subtitle">Try adjusting your search query.</p>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Controls -->
+          <div class="pagination-footer">
+            <span class="pagination-info">
+              Showing page {{ state.usersPage }} of {{ (state.usersTotalCount / state.usersPageSize | number: '1.0-0') || 1 }} ({{ state.usersTotalCount }} total users)
+            </span>
+            <div class="pagination-btns">
+              <button
+                type="button"
+                class="btn-secondary"
+                [disabled]="state.usersPage <= 1 || state.usersLoading"
+                (click)="onUserPageChange(state.usersPage - 1)"
+                id="btn-users-prev-page"
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                class="btn-secondary"
+                [disabled]="state.usersPage * state.usersPageSize >= state.usersTotalCount || state.usersLoading"
+                (click)="onUserPageChange(state.usersPage + 1)"
+                id="btn-users-next-page"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- 2. SYSTEM TASKS VIEW -->
+      @else if (state.activeTab === 'tasks') {
+        <section class="admin-card" id="system-tasks-panel" aria-label="System Tasks Management">
+          <!-- Filter & Controls Toolbar -->
+          <div class="toolbar-row">
+            <div class="search-box filter-search">
+              <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input
+                type="text"
+                placeholder="Search tasks by title, description, or id..."
+                [value]="state.taskSearchQuery"
+                (input)="onTaskSearchChange($any($event.target).value)"
+                id="input-search-tasks"
+              />
+            </div>
+
+            <div class="filter-item">
+              <label for="admin-task-status" class="filter-item-label">Status</label>
+              <select
+                id="admin-task-status"
+                class="azure-select"
+                [value]="state.taskStatusFilter"
+                (change)="onTaskStatusFilterChange($any($event.target).value)"
+              >
+                <option value="ALL">All Statuses</option>
+                <option value="Todo">To Do</option>
+                <option value="InProgress">In Progress</option>
+                <option value="InReview">In Review</option>
+                <option value="Done">Done</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            <div class="filter-item">
+              <label for="admin-task-priority" class="filter-item-label">Priority</label>
+              <select
+                id="admin-task-priority"
+                class="azure-select"
+                [value]="state.taskPriorityFilter"
+                (change)="onTaskPriorityFilterChange($any($event.target).value)"
+              >
+                <option value="ALL">All Priorities</option>
+                <option value="Critical">Critical</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </div>
+
+            <button type="button" class="btn-secondary" (click)="loadTasks()" [disabled]="state.tasksLoading" id="btn-refresh-tasks">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 4v6h-6"></path>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+              </svg>
+              <span>Refresh</span>
+            </button>
+          </div>
+
+          <!-- Tasks Table -->
+          <div class="table-responsive">
+            <table class="azure-table" id="admin-tasks-table">
+              <thead>
+                <tr>
+                  <th scope="col" style="width: 130px;">Status</th>
+                  <th scope="col" style="width: 100px;">Priority</th>
+                  <th scope="col">Title & Scope</th>
+                  <th scope="col" style="width: 140px;">Assignee</th>
+                  <th scope="col" style="width: 130px;">Deadline</th>
+                  <th scope="col" style="width: 120px; text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (state.tasksLoading) {
+                  <tr>
+                    <td colspan="6" class="empty-row">
+                      <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Loading system tasks...</p>
+                      </div>
+                    </td>
+                  </tr>
+                } @else {
+                  @for (task of filteredTasks$ | async; track task.id) {
+                    <tr class="table-row" (click)="onSelectTask(task)" [attr.id]="'task-row-' + task.id">
+                      <td>
+                        <span class="status-pill status-{{ task.status.toLowerCase() }}">
+                          <span class="status-dot"></span>
+                          <span>{{ task.status }}</span>
+                        </span>
+                      </td>
+                      <td>
+                        <span class="priority-badge priority-{{ task.priority.toLowerCase() }}">
+                          {{ task.priority }}
+                        </span>
+                      </td>
+                      <td>
+                        <div class="task-title-cell">
+                          <span class="task-title-text">{{ task.title }}</span>
+                          @if (task.description) {
+                            <span class="task-desc-text">{{ task.description }}</span>
+                          }
+                        </div>
+                      </td>
+                      <td>
+                        @if (task.assigneeId) {
+                          <span class="user-id-mono" title="{{ task.assigneeId }}">{{ task.assigneeId.substring(0, 8) }}...</span>
+                        } @else {
+                          <span class="empty-muted">Unassigned</span>
+                        }
+                      </td>
+                      <td>
+                        @if (task.deadline) {
+                          <span>{{ task.deadline | date: 'mediumDate' }}</span>
+                        } @else {
+                          <span class="empty-muted">None</span>
+                        }
+                      </td>
+                      <td style="text-align: right;">
+                        <button
+                          type="button"
+                          class="action-btn action-btn-primary"
+                          (click)="$event.stopPropagation(); onSelectTask(task)"
+                          [attr.id]="'btn-view-task-' + task.id"
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="6" class="empty-row">
+                        <div class="empty-state">
+                          <p class="empty-title">No tasks found</p>
+                          <p class="empty-subtitle">Try adjusting your filters.</p>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Controls -->
+          <div class="pagination-footer">
+            <span class="pagination-info">
+              Showing page {{ state.tasksPage }} of {{ (state.tasksTotalCount / state.tasksPageSize | number: '1.0-0') || 1 }} ({{ state.tasksTotalCount }} total tasks)
+            </span>
+            <div class="pagination-btns">
+              <button
+                type="button"
+                class="btn-secondary"
+                [disabled]="state.tasksPage <= 1 || state.tasksLoading"
+                (click)="onTaskPageChange(state.tasksPage - 1)"
+                id="btn-tasks-prev-page"
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                class="btn-secondary"
+                [disabled]="state.tasksPage * state.tasksPageSize >= state.tasksTotalCount || state.tasksLoading"
+                (click)="onTaskPageChange(state.tasksPage + 1)"
+                id="btn-tasks-next-page"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- 3. WORKSPACES MANAGEMENT VIEW -->
+      @if (state.activeTab === 'workspaces') {
+        <section class="admin-card" id="workspaces-management-panel" aria-label="Workspaces Management">
+          <!-- Filter & Controls Toolbar -->
+          <div class="toolbar-row">
+            <div class="search-box filter-search">
+              <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input
+                type="text"
+                placeholder="Search workspaces by name, code, or description..."
+                [value]="state.workspaceSearchQuery"
+                (input)="onWorkspaceSearchChange($any($event.target).value)"
+                id="input-search-workspaces"
+              />
+            </div>
+
+            <button
+              type="button"
+              class="btn-primary"
+              (click)="openCreateWorkspaceModal()"
+              id="btn-create-workspace"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>New Workspace</span>
+            </button>
+          </div>
+
+          <!-- Workspaces Table -->
+          <div class="table-responsive">
+            <table class="azure-table" id="workspaces-table">
+              <thead>
+                <tr>
+                  <th scope="col">Workspace</th>
+                  <th scope="col">Description</th>
+                  <th scope="col" style="width: 120px;">Your Role</th>
+                  <th scope="col" style="width: 100px; text-align: center;">Members</th>
+                  <th scope="col" style="width: 90px; text-align: center;">Tasks</th>
+                  <th scope="col" style="width: 130px;">Status</th>
+                  <th scope="col" style="width: 270px; text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (ws of filteredWorkspaces$ | async; track ws.id) {
+                  <tr class="table-row" [attr.id]="'ws-row-' + ws.id">
+                    <td>
+                      <div class="ws-identity-cell">
+                        <div class="ws-color-pill" [style.background-color]="ws.color">
+                          {{ ws.code }}
+                        </div>
+                        <div class="ws-name-box">
+                          <span class="ws-title">{{ ws.name }}</span>
+                          <span class="ws-id-sub">{{ ws.id }}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="ws-desc-text" [title]="ws.description">{{ ws.description }}</span>
+                    </td>
+                    <td>
+                      <span class="role-badge" [class.role-admin]="ws.role === 'Admin' || ws.role === 'Owner'">{{ ws.role }}</span>
+                    </td>
+                    <td style="text-align: center;">
+                      <span class="stat-count-pill">{{ ws.memberCount }}</span>
+                    </td>
+                    <td style="text-align: center;">
+                      <span class="stat-count-pill">{{ ws.taskCount }}</span>
+                    </td>
+                    <td>
+                      @if (ws.isDefault) {
+                        <span class="badge-default">Default</span>
+                      } @else {
+                        <button
+                          type="button"
+                          class="btn-text-action"
+                          (click)="onSetDefaultWorkspace(ws)"
+                          [attr.id]="'btn-set-default-' + ws.id"
+                          title="Set as default workspace"
+                        >
+                          Make default
+                        </button>
+                      }
+                    </td>
+                    <td style="text-align: right;">
+                      <div class="table-actions-group">
+                        <button
+                          type="button"
+                          class="action-btn"
+                          (click)="onSelectAndSwitchWorkspace(ws)"
+                          [attr.id]="'btn-switch-ws-' + ws.id"
+                          title="Set as active workspace"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                          </svg>
+                          <span>Switch</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          class="action-btn action-btn-primary"
+                          (click)="openEditWorkspaceModal(ws)"
+                          [attr.id]="'btn-edit-ws-' + ws.id"
+                          title="Edit workspace"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                          </svg>
+                          <span>Edit</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          class="action-btn action-btn-danger"
+                          (click)="openDeleteWorkspaceModal(ws)"
+                          [attr.id]="'btn-delete-ws-' + ws.id"
+                          title="Delete workspace"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                          </svg>
+                          <span>Delete</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="7" class="empty-row">
+                      <div class="empty-state">
+                        <p class="empty-title">No workspaces found</p>
+                        <p class="empty-subtitle">Try adjusting your search query or create a new workspace.</p>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+
+      <!-- 4. CONCRETE USER PROFILE BLADE (REUSING ProfileComponent) -->
+      @if (state.isProfileDrawerOpen && state.selectedUserId) {
+        <div class="modal-overlay" (click)="closeProfileDrawer()" id="profile-drawer-overlay"></div>
+        <aside class="profile-drawer" role="dialog" aria-modal="true" aria-label="User Profile Details">
+          <div class="drawer-header">
+            <div class="drawer-title-wrap">
+              <h2 class="drawer-title">User Profile Details</h2>
+              <span class="drawer-subtitle">Reused Profile Component</span>
+            </div>
+            <button
+              type="button"
+              class="drawer-close-btn"
+              (click)="closeProfileDrawer()"
+              title="Close drawer"
+              id="btn-close-profile-drawer"
+            >
+              ✕
+            </button>
+          </div>
+          <div class="drawer-body">
+            <app-profile
+              [userId]="state.selectedUserId"
+              [embedded]="true"
+              (closeRequested)="closeProfileDrawer()"
+              (profileUpdated)="onUserProfileUpdated($event)"
+            ></app-profile>
+          </div>
+        </aside>
+      }
+
+      <!-- 4. ROLE ASSIGNMENT MODAL -->
+      @if (state.isRolesModalOpen && state.selectedUserForRoles; as targetUser) {
+        <div class="modal-overlay" (click)="closeRolesModal()" id="roles-modal-overlay"></div>
+        <div class="azure-modal" role="dialog" aria-modal="true" aria-labelledby="roles-modal-title" id="roles-modal">
+          <div class="modal-header">
+            <h3 class="modal-title" id="roles-modal-title">
+              Manage Roles — &#64;{{ targetUser.userName }}
+            </h3>
+            <button type="button" class="modal-close-btn" (click)="closeRolesModal()" aria-label="Close">✕</button>
+          </div>
+
+          <div class="modal-body-content">
+            <p class="modal-intro-text">
+              Assign or remove system roles for <strong>{{ targetUser.fullName || targetUser.userName }}</strong> ({{ targetUser.email }}).
+            </p>
+
+            @if (state.rolesLoading) {
+              <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading user roles...</p>
+              </div>
+            } @else {
+              <div class="roles-selection-list">
+                @for (role of state.availableRoles; track role) {
+                  <div class="role-item-row" [class.is-assigned]="isRoleAssigned(role)">
+                    <div class="role-item-info">
+                      <div class="role-name-row">
+                        <span class="role-badge" [class.role-admin]="role === 'Admin'">{{ role }}</span>
+                        @if (isRoleAssigned(role)) {
+                          <span class="role-assigned-tag">Assigned</span>
+                        }
+                      </div>
+                      <span class="role-item-desc">
+                        @if (role === 'Admin') { Full administrative access to users, tasks, and system settings. }
+                        @else if (role === 'Manager') { Capability to coordinate and manage team tasks. }
+                        @else { Standard member permissions to view and track tasks. }
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      class="btn-sm"
+                      [class.btn-danger]="isRoleAssigned(role)"
+                      [class.btn-primary]="!isRoleAssigned(role)"
+                      [disabled]="state.roleUpdating"
+                      (click)="toggleRole(role)"
+                      [attr.id]="'btn-toggle-role-' + role"
+                    >
+                      @if (state.roleUpdating) {
+                        <span class="btn-spinner"></span>
+                      } @else if (isRoleAssigned(role)) {
+                        <span>Remove Role</span>
+                      } @else {
+                        <span>Assign Role</span>
+                      }
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" (click)="closeRolesModal()" id="btn-close-roles-modal">
+              Done
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- 5. USER DELETION WITH USERNAME CONFIRMATION MODAL -->
+      @if (state.isDeleteModalOpen && state.userToDelete; as targetUser) {
+        <div class="modal-overlay" (click)="closeDeleteModal()" id="delete-modal-overlay"></div>
+        <div class="azure-modal danger-modal" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title" id="delete-user-modal">
+          <div class="modal-header">
+            <h3 class="modal-title modal-danger-title" id="delete-modal-title">
+              Delete User Account
+            </h3>
+            <button type="button" class="modal-close-btn" (click)="closeDeleteModal()" aria-label="Close">✕</button>
+          </div>
+
+          <div class="modal-body-content">
+            <div class="danger-warning-banner">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d13438" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <div>
+                <strong>Warning: Permanent Deletion</strong>
+                <p>
+                  You are about to permanently delete user <strong>{{ targetUser.fullName || targetUser.userName }}</strong> (&#64;{{ targetUser.userName }}). This action cannot be reversed.
+                </p>
+              </div>
+            </div>
+
+            <div class="confirmation-prompt-group">
+              <label for="input-confirm-username" class="confirm-label">
+                To confirm, please type the exact username <code>{{ targetUser.userName }}</code> below:
+              </label>
+              <input
+                id="input-confirm-username"
+                type="text"
+                class="azure-input"
+                [value]="state.confirmDeleteInput"
+                (input)="onConfirmDeleteInputChange($any($event.target).value)"
+                placeholder="Type username to confirm"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" (click)="closeDeleteModal()" [disabled]="state.isDeletingUser" id="btn-cancel-delete">
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn-danger"
+              [disabled]="!isDeleteButtonEnabled()"
+              (click)="onConfirmDeleteUser()"
+              id="btn-confirm-delete-user"
+            >
+              @if (state.isDeletingUser) {
+                <span class="btn-spinner"></span>
+                <span>Deleting...</span>
+              } @else {
+                <span>Delete User</span>
+              }
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- 6. WORKSPACE CREATE / EDIT MODAL -->
+      @if (state.isWorkspaceModalOpen) {
+        <div class="modal-overlay" (click)="closeWorkspaceModal()" id="workspace-modal-overlay"></div>
+        <div class="azure-modal" role="dialog" aria-modal="true" aria-labelledby="modal-workspace-title" id="workspace-dialog">
+          <div class="modal-header">
+            <h3 class="modal-title" id="modal-workspace-title">
+              {{ state.workspaceModalMode === 'create' ? 'Create New Workspace' : 'Edit Workspace' }}
+            </h3>
+            <button type="button" class="modal-close-btn" (click)="closeWorkspaceModal()" aria-label="Close">✕</button>
+          </div>
+
+          <div class="modal-body-content">
+            <div class="ws-form-field">
+              <label for="ws-input-name" class="ws-label">Workspace Name <span class="required-star">*</span></label>
+              <input
+                id="ws-input-name"
+                type="text"
+                class="azure-input"
+                [value]="state.workspaceFormName"
+                (input)="onWorkspaceFormNameChange($any($event.target).value)"
+                placeholder="e.g. Cloud Security & Compliance"
+                maxlength="60"
+              />
+            </div>
+
+            <div class="form-row-2">
+              <div class="ws-form-field">
+                <label for="ws-input-code" class="ws-label">Code (Max 5) <span class="required-star">*</span></label>
+                <input
+                  id="ws-input-code"
+                  type="text"
+                  class="azure-input text-uppercase"
+                  [value]="state.workspaceFormCode"
+                  (input)="onWorkspaceFormCodeChange($any($event.target).value)"
+                  placeholder="e.g. SEC"
+                  maxlength="5"
+                />
+              </div>
+
+              <div class="ws-form-field">
+                <label for="ws-select-role" class="ws-label">Admin Role</label>
+                <select
+                  id="ws-select-role"
+                  class="azure-select"
+                  [value]="state.workspaceFormRole"
+                  (change)="onWorkspaceFormRoleChange($any($event.target).value)"
+                >
+                  <option value="Owner">Owner</option>
+                  <option value="Admin">Admin</option>
+                  <option value="Contributor">Contributor</option>
+                  <option value="Reader">Reader</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="ws-form-field">
+              <label for="ws-input-desc" class="ws-label">Description</label>
+              <textarea
+                id="ws-input-desc"
+                class="azure-textarea"
+                rows="2"
+                [value]="state.workspaceFormDescription"
+                (input)="onWorkspaceFormDescriptionChange($any($event.target).value)"
+                placeholder="Brief purpose and scope of this workspace..."
+                maxlength="200"
+              ></textarea>
+            </div>
+
+            <div class="ws-form-field">
+              <span class="ws-label">Theme Accent Color</span>
+              <div class="color-palette-picker">
+                @for (c of availableWorkspaceColors; track c) {
+                  <button
+                    type="button"
+                    class="color-chip"
+                    [class.selected]="state.workspaceFormColor === c"
+                    [style.background-color]="c"
+                    (click)="onWorkspaceFormColorSelect(c)"
+                    [attr.aria-label]="'Select color ' + c"
+                  ></button>
+                }
+              </div>
+            </div>
+
+            <div class="checkbox-group">
+              <label class="checkbox-label">
+                <input
+                  type="checkbox"
+                  [checked]="state.workspaceFormIsDefault"
+                  (change)="onWorkspaceFormIsDefaultChange($any($event.target).checked)"
+                  id="ws-check-default"
+                />
+                <span>Set as default organization workspace</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" (click)="closeWorkspaceModal()" id="btn-cancel-workspace">
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn-primary"
+              [disabled]="!isWorkspaceFormValid()"
+              (click)="saveWorkspace()"
+              id="btn-save-workspace"
+            >
+              {{ state.workspaceModalMode === 'create' ? 'Create Workspace' : 'Save Changes' }}
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- 7. WORKSPACE DELETE CONFIRMATION MODAL -->
+      @if (state.isDeleteWorkspaceModalOpen && state.workspaceToDelete; as targetWs) {
+        <div class="modal-overlay" (click)="closeDeleteWorkspaceModal()" id="delete-workspace-overlay"></div>
+        <div class="azure-modal danger-modal" role="dialog" aria-modal="true" aria-labelledby="delete-ws-title" id="delete-workspace-modal">
+          <div class="modal-header">
+            <h3 class="modal-title modal-danger-title" id="delete-ws-title">
+              Delete Workspace
+            </h3>
+            <button type="button" class="modal-close-btn" (click)="closeDeleteWorkspaceModal()" aria-label="Close">✕</button>
+          </div>
+
+          <div class="modal-body-content">
+            <div class="danger-warning-banner">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d13438" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <div>
+                <strong>Warning: Permanent Workspace Deletion</strong>
+                <p>
+                  You are about to delete workspace <strong>{{ targetWs.name }}</strong> (<code>{{ targetWs.code }}</code>).
+                  All team member assignments and task associations in this workspace will be removed.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" (click)="closeDeleteWorkspaceModal()" id="btn-cancel-delete-ws">
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn-danger"
+              (click)="confirmDeleteWorkspace()"
+              id="btn-confirm-delete-ws"
+            >
+              Delete Workspace
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- 8. TASK DETAILS BLADE (REUSING TaskDetailsComponent) -->
+      <app-task-details
+        [task]="state.selectedTaskDetails"
+        [isOpen]="state.isTaskBladeOpen"
+        (closeBlade)="closeTaskBlade()"
+        (statusChange)="onTaskStatusChange($event)"
+        (complete)="onTaskComplete()"
+        (cancel)="onTaskCancel()"
+      ></app-task-details>
+    }
+  </main>
+</div>

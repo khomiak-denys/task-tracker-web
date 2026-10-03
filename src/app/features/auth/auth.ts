@@ -143,7 +143,11 @@ export class AuthComponent {
         next: () => {
           this.updateState({ loading: false });
           this.notificationService.success('Welcome back! You have successfully signed in.');
-          this.router.navigate(['/']);
+          if (this.authService.isAdmin()) {
+            this.router.navigate(['/admin']);
+          } else {
+            this.router.navigate(['/workspaces']);
+          }
         },
         error: () => {
           this.updateState({ loading: false });
@@ -177,7 +181,11 @@ export class AuthComponent {
         next: () => {
           this.updateState({ loading: false });
           this.notificationService.success('Account created successfully! Welcome aboard.');
-          this.router.navigate(['/']);
+          if (this.authService.isAdmin()) {
+            this.router.navigate(['/admin']);
+          } else {
+            this.router.navigate(['/workspaces']);
+          }
         },
         error: (err: HttpErrorResponse) => {
           this.updateState({ loading: false });
