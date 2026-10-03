@@ -50,6 +50,17 @@ export class AuthService {
     distinctUntilChanged(),
   );
 
+  /** Reactive stream of whether the current user has the Admin role. */
+  readonly isAdmin$: Observable<boolean> = this.currentUser$.pipe(
+    map((user) => {
+      if (!user || !user.role) return false;
+      if (Array.isArray(user.role)) return user.role.includes('Admin');
+      return user.role === 'Admin';
+    }),
+    distinctUntilChanged(),
+  );
+
+
   constructor(
     private readonly http: HttpClient,
     private readonly router: Router,
@@ -62,6 +73,15 @@ export class AuthService {
     const payload = this.decodeToken(t);
     return payload !== null && payload.exp * 1000 > Date.now();
   }
+
+  /** Synchronous check whether current user holds the Admin role. */
+  isAdmin(): boolean {
+    const user = this.currentUser();
+    if (!user || !user.role) return false;
+    if (Array.isArray(user.role)) return user.role.includes('Admin');
+    return user.role === 'Admin';
+  }
+
 
   /** Synchronous getter for currently decoded user. */
   currentUser(): JwtPayload | null {
