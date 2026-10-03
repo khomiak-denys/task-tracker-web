@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -43,8 +52,6 @@ export interface ProfileViewState extends ProfileState {
   readonly userInitial: string;
   readonly userId: string;
   readonly userRoles: string[];
-  readonly tokenIssuedAt: string;
-  readonly tokenExpiresAt: string;
   readonly lockoutEndFormatted: string;
 }
 
@@ -78,6 +85,18 @@ const initialProfileState: ProfileState = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileComponent implements OnInit {
+  @Input() set userId(value: string | undefined | null) {
+    if (value !== undefined) {
+      this.updateState({ routeUserId: value });
+      this.loadProfile();
+    }
+  }
+
+  @Input() embedded = false;
+
+  @Output() readonly profileUpdated = new EventEmitter<UserProfile>();
+  @Output() readonly closeRequested = new EventEmitter<void>();
+
   private readonly stateSubject = new BehaviorSubject<ProfileState>(initialProfileState);
   readonly state$: Observable<ProfileState> = this.stateSubject.asObservable();
   readonly vm$: Observable<ProfileViewState> = this.state$.pipe(
@@ -92,6 +111,7 @@ export class ProfileComponent implements OnInit {
   protected readonly passwordForm: FormGroup;
 
   private readonly destroyRef = inject(DestroyRef);
+
 
   constructor(
     protected readonly authService: AuthService,
@@ -120,11 +140,15 @@ export class ProfileComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
-      const id = params.get('id');
-      this.updateState({ routeUserId: id });
+    if (!this.embedded) {
+      this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+        const id = params.get('id');
+        this.updateState({ routeUserId: id });
+        this.loadProfile();
+      });
+    } else if (this.stateSubject.value.routeUserId) {
       this.loadProfile();
-    });
+    }
   }
 
   protected isSectionExpanded(section: string): boolean {
@@ -234,10 +258,20 @@ export class ProfileComponent implements OnInit {
     const uid = this.snapshot.userId;
     if (!uid) return;
 
-    this.updateState({ savingProfile: true });
     const { userName, fullName } = this.profileForm.getRawValue();
     const cleanUserName = typeof userName === 'string' ? userName.trim() : userName;
     const cleanFullName = typeof fullName === 'string' && fullName.trim() ? fullName.trim() : null;
+
+    const current = this.stateSubject.value.profile;
+    const currentUserName = current?.userName?.trim() ?? '';
+    const currentFullName = current?.fullName?.trim() ? current.fullName.trim() : null;
+
+    if (cleanUserName === currentUserName && cleanFullName === currentFullName) {
+      this.notificationService.info('No changes were made.');
+      return;
+    }
+
+    this.updateState({ savingProfile: true });
 
     this.userService
       .updateProfile(uid, { userName: cleanUserName, fullName: cleanFullName })
@@ -245,13 +279,17 @@ export class ProfileComponent implements OnInit {
       .subscribe({
         next: () => {
           const current = this.stateSubject.value.profile;
+          const updated = current ? { ...current, userName: cleanUserName, fullName: cleanFullName } : null;
           this.updateState({
             savingProfile: false,
             profileSuccessMessage: 'Profile updated successfully.',
-            profile: current ? { ...current, userName: cleanUserName, fullName: cleanFullName } : null,
+            profile: updated,
           });
           this.notificationService.success('Profile updated successfully.');
           this.expandSection('personal');
+          if (updated) {
+            this.profileUpdated.emit(updated);
+          }
         },
         error: (err: HttpErrorResponse) => {
           this.updateState({
@@ -387,12 +425,6 @@ export class ProfileComponent implements OnInit {
       }
     }
 
-    const iat = tokenUser?.iat;
-    const tokenIssuedAt = iat ? new Date(iat * 1000).toLocaleString() : 'N/A';
-
-    const exp = tokenUser?.exp;
-    const tokenExpiresAt = exp ? new Date(exp * 1000).toLocaleString() : 'N/A';
-
     const lockoutEnd = state.profile?.lockoutEnd;
     const lockoutEndFormatted = lockoutEnd
       ? new Date(lockoutEnd).toLocaleString()
@@ -406,8 +438,6 @@ export class ProfileComponent implements OnInit {
       userInitial,
       userId,
       userRoles,
-      tokenIssuedAt,
-      tokenExpiresAt,
       lockoutEndFormatted,
     };
   }
