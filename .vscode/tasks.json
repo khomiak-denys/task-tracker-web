@@ -3,6 +3,7 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "Start Angular",
       "type": "npm",
       "script": "start",
       "isBackground": true,
@@ -18,9 +19,15 @@
             "regexp": "bundle generation complete"
           }
         }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": false
       }
     },
     {
+      "label": "Test Angular",
       "type": "npm",
       "script": "test",
       "isBackground": true,
@@ -36,6 +43,11 @@
             "regexp": "bundle generation complete"
           }
         }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": false
       }
     }
   ]

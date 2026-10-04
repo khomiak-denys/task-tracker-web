@@ -90,13 +90,13 @@ $azure-shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.12);
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0;
 }
 
 .form-field {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.125rem;
 
   label {
     font-size: 0.8125rem;
@@ -174,9 +174,9 @@ input {
 }
 
 .field-error-slot {
-  min-height: 1rem;
+  min-height: 0.75rem;
   font-size: 0.75rem;
-  line-height: 1rem;
+  line-height: 0.75rem;
   display: flex;
   align-items: center;
 }

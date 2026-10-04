@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  ElementRef,
   HostListener,
   OnInit,
   inject,
@@ -86,6 +87,10 @@ export interface AdminState {
   // Workspace Deletion Confirmation
   readonly workspaceToDelete: Workspace | null;
   readonly isDeleteWorkspaceModalOpen: boolean;
+
+  // User Dropdown
+  readonly dropdownOpen: boolean;
+  readonly userInitial: string;
 }
 
 const initialAdminState: AdminState = {
@@ -140,6 +145,9 @@ const initialAdminState: AdminState = {
 
   workspaceToDelete: null,
   isDeleteWorkspaceModalOpen: false,
+
+  dropdownOpen: false,
+  userInitial: '?',
 };
 
 @Component({
@@ -222,6 +230,7 @@ export class AdminComponent implements OnInit {
   ];
 
   private readonly destroyRef = inject(DestroyRef);
+  private readonly elementRef = inject(ElementRef);
 
   constructor(
     protected readonly authService: AuthService,
@@ -234,6 +243,7 @@ export class AdminComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.updateState({ userInitial: this.calculateUserInitial() });
     this.loadUsers();
     this.loadTasks();
     this.loadAvailableRoles();
@@ -242,7 +252,9 @@ export class AdminComponent implements OnInit {
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
-    if (this.snapshot.isDeleteModalOpen) {
+    if (this.snapshot.dropdownOpen) {
+      this.closeDropdown();
+    } else if (this.snapshot.isDeleteModalOpen) {
       this.closeDeleteModal();
     } else if (this.snapshot.isDeleteWorkspaceModalOpen) {
       this.closeDeleteWorkspaceModal();
@@ -797,6 +809,48 @@ export class AdminComponent implements OnInit {
   getUserInitial(user: UserResult): string {
     const name = user.fullName || user.userName || user.email;
     return name.trim().charAt(0).toUpperCase() || '?';
+  }
+
+  @HostListener('document:click', ['$event'])
+  protected onDocumentClick(event: MouseEvent): void {
+    if (!this.snapshot.dropdownOpen) return;
+    const target = event.target as HTMLElement;
+    if (!this.elementRef.nativeElement.querySelector('.user-menu-container')?.contains(target)) {
+      this.closeDropdown();
+    }
+  }
+
+  protected toggleDropdown(): void {
+    this.updateState({ dropdownOpen: !this.snapshot.dropdownOpen });
+  }
+
+  protected closeDropdown(): void {
+    this.updateState({ dropdownOpen: false });
+  }
+
+  protected onProfile(): void {
+    this.closeDropdown();
+    this.router.navigate(['/profile']);
+  }
+
+  protected onLogout(): void {
+    this.closeDropdown();
+    this.notificationService.info('You have been signed out.');
+    this.authService.logout();
+  }
+
+  private calculateUserInitial(): string {
+    const user =
+      typeof this.authService?.currentUser === 'function' ? this.authService.currentUser() : null;
+    if (!user) return '?';
+    const name =
+      user.unique_name ||
+      user['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] ||
+      user.name ||
+      user.email ||
+      '';
+    const trimmed = typeof name === 'string' ? name.trim() : '';
+    return trimmed.charAt(0).toUpperCase() || '?';
   }
 
   private updateState(partial: Partial<AdminState>): void {
