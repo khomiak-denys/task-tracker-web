@@ -39,12 +39,14 @@
                 autocomplete="email"
               />
             </div>
-            @if (loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched && !loginForm.get('email')?.hasError('serverError')) {
-              <span class="field-error">Email is required</span>
-            }
-            @if (loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched && !loginForm.get('email')?.hasError('serverError')) {
-              <span class="field-error">Enter a valid email address</span>
-            }
+            <div class="field-error-slot" aria-live="polite">
+              @if (loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched && !loginForm.get('email')?.hasError('serverError')) {
+                <span class="field-error">Email is required</span>
+              }
+              @if (loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched && !loginForm.get('email')?.hasError('serverError')) {
+                <span class="field-error">Enter a valid email address</span>
+              }
+            </div>
           </div>
 
           <div class="form-field">
@@ -76,9 +78,11 @@
                 }
               </button>
             </div>
-            @if (loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched && !loginForm.get('password')?.hasError('serverError')) {
-              <span class="field-error">Password is required</span>
-            }
+            <div class="field-error-slot" aria-live="polite">
+              @if (loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched && !loginForm.get('password')?.hasError('serverError')) {
+                <span class="field-error">Password is required</span>
+              }
+            </div>
           </div>
 
           <button
@@ -114,12 +118,14 @@
                 autocomplete="email"
               />
             </div>
-            @if (registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched && !registerForm.get('email')?.hasError('serverError')) {
-              <span class="field-error">Email is required</span>
-            }
-            @if (registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched && !registerForm.get('email')?.hasError('serverError')) {
-              <span class="field-error">Enter a valid email address</span>
-            }
+            <div class="field-error-slot" aria-live="polite">
+              @if (registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched && !registerForm.get('email')?.hasError('serverError')) {
+                <span class="field-error">Email is required</span>
+              }
+              @if (registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched && !registerForm.get('email')?.hasError('serverError')) {
+                <span class="field-error">Enter a valid email address</span>
+              }
+            </div>
           </div>
 
           <div class="form-field">
@@ -137,12 +143,14 @@
                 autocomplete="username"
               />
             </div>
-            @if (registerForm.get('userName')?.hasError('required') && registerForm.get('userName')?.touched && !registerForm.get('userName')?.hasError('serverError')) {
-              <span class="field-error">Username is required</span>
-            }
-            @if (registerForm.get('userName')?.hasError('minlength') && registerForm.get('userName')?.touched && !registerForm.get('userName')?.hasError('serverError')) {
-              <span class="field-error">Username must be at least 3 characters</span>
-            }
+            <div class="field-error-slot" aria-live="polite">
+              @if (registerForm.get('userName')?.hasError('required') && registerForm.get('userName')?.touched && !registerForm.get('userName')?.hasError('serverError')) {
+                <span class="field-error">Username is required</span>
+              }
+              @if (registerForm.get('userName')?.hasError('minlength') && registerForm.get('userName')?.touched && !registerForm.get('userName')?.hasError('serverError')) {
+                <span class="field-error">Username must be at least 3 characters</span>
+              }
+            </div>
           </div>
 
           <div class="form-field">
@@ -174,12 +182,14 @@
                 }
               </button>
             </div>
-            @if (registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched && !registerForm.get('password')?.hasError('serverError')) {
-              <span class="field-error">Password is required</span>
-            }
-            @if (registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched && !registerForm.get('password')?.hasError('serverError')) {
-              <span class="field-error">Password must be at least 6 characters</span>
-            }
+            <div class="field-error-slot" aria-live="polite">
+              @if (registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched && !registerForm.get('password')?.hasError('serverError')) {
+                <span class="field-error">Password is required</span>
+              }
+              @if (registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched && !registerForm.get('password')?.hasError('serverError')) {
+                <span class="field-error">Password must be at least 6 characters</span>
+              }
+            </div>
           </div>
 
           <div class="form-field">
@@ -223,11 +233,13 @@
                 }
               </button>
             </div>
-            @if (registerForm.get('confirmPassword')?.hasError('required') && registerForm.get('confirmPassword')?.touched && !registerForm.get('confirmPassword')?.hasError('serverError')) {
-              <span class="field-error">Confirm password is required</span>
-            } @else if (registerForm.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched) {
-              <span class="field-error">Passwords do not match</span>
-            }
+            <div class="field-error-slot" aria-live="polite">
+              @if (registerForm.get('confirmPassword')?.hasError('required') && registerForm.get('confirmPassword')?.touched && !registerForm.get('confirmPassword')?.hasError('serverError')) {
+                <span class="field-error">Confirm password is required</span>
+              } @else if (registerForm.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched) {
+                <span class="field-error">Passwords do not match</span>
+              }
+            </div>
           </div>
 
           <button
