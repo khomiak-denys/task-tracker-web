@@ -33,6 +33,7 @@ import {
 } from '../../core/models/task.models';
 import { Workspace, MOCK_WORKSPACES } from '../../core/models/workspace.models';
 import { TaskDetailsComponent } from './task-details/task-details.component';
+import { WorkspaceSelectorComponent } from '../../shared/components/workspace-selector/workspace-selector';
 
 export type DashboardTab = 'board' | 'list' | 'statistics';
 
@@ -110,6 +111,7 @@ export interface KpiSummary {
     DatePipe,
     RouterLink,
     TaskDetailsComponent,
+    WorkspaceSelectorComponent,
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
@@ -236,12 +238,19 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.updateState({ userInitial: this.calculateUserInitial() });
+
+    this.workspaceService.workspaces$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((workspaces) => {
+        this.updateState({ workspaces });
+      });
+
     this.workspaceService.selectedWorkspace$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((ws) => {
-        this.updateState({ selectedWorkspace: ws });
+        this.updateState({ selectedWorkspace: ws, page: 1 });
+        this.loadTasks();
       });
-    this.loadTasks();
   }
 
   protected onWorkspaces(): void {
@@ -253,10 +262,11 @@ export class DashboardComponent implements OnInit {
     this.updateState({ loading: true });
     const current = this.snapshot;
 
+    const workspaceId = current.selectedWorkspace?.id || null;
     const request$ =
       current.viewMode === 'my-tasks'
-        ? this.taskService.getMy(current.myFilterType, current.page, current.pageSize)
-        : this.taskService.getAll(current.page, current.pageSize);
+        ? this.taskService.getMy(current.myFilterType, current.page, current.pageSize, workspaceId)
+        : this.taskService.getAll(current.page, current.pageSize, workspaceId);
 
     request$
       .pipe(
@@ -303,7 +313,7 @@ export class DashboardComponent implements OnInit {
   }
 
   protected onWorkspaceChange(workspace: Workspace): void {
-    this.updateState({ selectedWorkspace: workspace });
+    this.workspaceService.selectWorkspace(workspace);
     this.notificationService.info(`Switched active workspace to: ${workspace.name}`);
   }
 
@@ -487,7 +497,11 @@ export class DashboardComponent implements OnInit {
     const tagsArray =
       this.createdTags.length > 0 ? [...this.createdTags] : formTagsArray;
 
+    const activeWorkspaceId =
+      this.snapshot.selectedWorkspace?.id || this.workspaceService.currentWorkspace?.id || '';
+
     const request: CreateTaskRequest = {
+      workspaceId: activeWorkspaceId,
       title: val.title.trim(),
       description: val.description?.trim() || null,
       priority: val.priority,
