@@ -23,6 +23,7 @@ describe('TaskService', () => {
 
   const mockTask: TaskResult = {
     id: 'task-1',
+    workspaceId: 'ws-arch-core',
     title: 'Design Dashboard Schema',
     description: 'Create Azure styled dashboard representation for tasks',
     status: 'InProgress',
@@ -122,6 +123,7 @@ describe('TaskService', () => {
 
   it('create_Should_SendPostRequestWithPayload_When_Called', (done) => {
     const payload: CreateTaskRequest = {
+      workspaceId: 'ws-arch-core',
       title: 'New Task',
       description: 'Description',
       priority: 'High',
@@ -223,5 +225,29 @@ describe('TaskService', () => {
     expect(req.request.method).toBe('DELETE');
     expect(req.request.withCredentials).toBeTrue();
     req.flush(null);
+  });
+
+  it('getAll_Should_IncludeWorkspaceIdParam_When_WorkspaceIdProvided', (done) => {
+    service.getAll(1, 10, 'ws-arch-core').subscribe((result) => {
+      expect(result).toEqual(mockPagedTasks);
+      done();
+    });
+
+    const req = httpTesting.expectOne(`${baseUrl}?page=1&pageSize=10&workspaceId=ws-arch-core`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.withCredentials).toBeTrue();
+    req.flush(mockPagedTasks);
+  });
+
+  it('getMy_Should_IncludeWorkspaceIdParam_When_WorkspaceIdProvided', (done) => {
+    service.getMy('assigned', 1, 10, 'ws-arch-core').subscribe((result) => {
+      expect(result).toEqual(mockPagedTasks);
+      done();
+    });
+
+    const req = httpTesting.expectOne(`${baseUrl}/my?page=1&pageSize=10&type=assigned&workspaceId=ws-arch-core`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.withCredentials).toBeTrue();
+    req.flush(mockPagedTasks);
   });
 });
