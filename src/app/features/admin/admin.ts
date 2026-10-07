@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, map } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -156,7 +156,6 @@ const initialAdminState: AdminState = {
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink,
     ProfileComponent,
     TaskDetailsComponent,
   ],
@@ -641,6 +640,11 @@ export class AdminComponent implements OnInit {
       .subscribe((workspaces) => {
         this.updateState({ workspaces });
       });
+    if (typeof this.workspaceService.loadWorkspaces === 'function') {
+      this.workspaceService.loadWorkspaces().subscribe({
+        error: () => {},
+      });
+    }
   }
 
   onWorkspaceSearchChange(query: string): void {
@@ -669,7 +673,7 @@ export class AdminComponent implements OnInit {
       workspaceFormName: ws.name,
       workspaceFormCode: ws.code,
       workspaceFormDescription: ws.description,
-      workspaceFormColor: ws.color,
+      workspaceFormColor: ws.color || '#0078D4',
       workspaceFormRole: ws.role,
       workspaceFormIsDefault: !!ws.isDefault,
     });
@@ -809,6 +813,12 @@ export class AdminComponent implements OnInit {
   getUserInitial(user: UserResult): string {
     const name = user.fullName || user.userName || user.email;
     return name.trim().charAt(0).toUpperCase() || '?';
+  }
+
+  getWorkspaceInitial(ws?: Workspace | null): string {
+    if (!ws?.name) return 'W';
+    const trimmed = ws.name.trim();
+    return trimmed ? trimmed.charAt(0).toUpperCase() : 'W';
   }
 
   @HostListener('document:click', ['$event'])
