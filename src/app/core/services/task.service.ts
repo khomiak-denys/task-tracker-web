@@ -10,6 +10,7 @@ import {
   UpdateTaskRequest,
   ChangeStatusRequest,
   LogTimeRequest,
+  TaskFilterParams,
 } from '../models/task.models';
 
 @Injectable({ providedIn: 'root' })
@@ -18,11 +19,40 @@ export class TaskService {
 
   constructor(private readonly http: HttpClient) {}
 
-  /** GET /api/v1/tasks?page={page}&pageSize={pageSize} */
-  getAll(page: number = 1, pageSize: number = 10): Observable<PaginationResult<TaskResult>> {
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('pageSize', pageSize.toString());
+  /** GET /api/v1/tasks?page={page}&pageSize={pageSize}&... */
+  getAll(
+    pageOrParams: number | TaskFilterParams = 1,
+    pageSize: number = 10,
+    search?: string | null,
+    status?: string | null,
+    priority?: string | null,
+    workspaceId?: string | null,
+  ): Observable<PaginationResult<TaskResult>> {
+    let params = new HttpParams();
+
+    if (typeof pageOrParams === 'object' && pageOrParams !== null) {
+      params = params
+        .set('page', (pageOrParams.page ?? 1).toString())
+        .set('pageSize', (pageOrParams.pageSize ?? 10).toString());
+
+      if (pageOrParams.workspaceId) params = params.set('workspaceId', pageOrParams.workspaceId);
+      if (pageOrParams.search) params = params.set('search', pageOrParams.search);
+      if (pageOrParams.status) params = params.set('status', pageOrParams.status);
+      if (pageOrParams.priority) params = params.set('priority', pageOrParams.priority);
+      if (pageOrParams.assigneeId) params = params.set('assigneeId', pageOrParams.assigneeId);
+      if (pageOrParams.createdById) params = params.set('createdById', pageOrParams.createdById);
+      if (pageOrParams.tag) params = params.set('tag', pageOrParams.tag);
+      if (pageOrParams.type) params = params.set('type', pageOrParams.type);
+    } else {
+      params = params
+        .set('page', pageOrParams.toString())
+        .set('pageSize', pageSize.toString());
+
+      if (workspaceId) params = params.set('workspaceId', workspaceId);
+      if (search) params = params.set('search', search);
+      if (status) params = params.set('status', status);
+      if (priority) params = params.set('priority', priority);
+    }
 
     return this.http.get<PaginationResult<TaskResult>>(this.apiUrl, {
       params,
@@ -30,18 +60,39 @@ export class TaskService {
     });
   }
 
-  /** GET /api/v1/tasks/my?type={type}&page={page}&pageSize={pageSize} */
+  /** GET /api/v1/tasks/my?type={type}&page={page}&pageSize={pageSize}&... */
   getMy(
-    type?: string | null,
+    typeOrParams?: string | TaskFilterParams | null,
     page: number = 1,
     pageSize: number = 10,
+    search?: string | null,
+    status?: string | null,
+    priority?: string | null,
   ): Observable<PaginationResult<TaskResult>> {
-    let params = new HttpParams()
-      .set('page', page.toString())
-      .set('pageSize', pageSize.toString());
+    let params = new HttpParams();
 
-    if (type) {
-      params = params.set('type', type);
+    if (typeof typeOrParams === 'object' && typeOrParams !== null) {
+      params = params
+        .set('page', (typeOrParams.page ?? 1).toString())
+        .set('pageSize', (typeOrParams.pageSize ?? 10).toString());
+
+      if (typeOrParams.workspaceId) params = params.set('workspaceId', typeOrParams.workspaceId);
+      if (typeOrParams.type) params = params.set('type', typeOrParams.type);
+      if (typeOrParams.search) params = params.set('search', typeOrParams.search);
+      if (typeOrParams.status) params = params.set('status', typeOrParams.status);
+      if (typeOrParams.priority) params = params.set('priority', typeOrParams.priority);
+      if (typeOrParams.tag) params = params.set('tag', typeOrParams.tag);
+    } else {
+      params = params
+        .set('page', page.toString())
+        .set('pageSize', pageSize.toString());
+
+      if (typeOrParams) {
+        params = params.set('type', typeOrParams);
+      }
+      if (search) params = params.set('search', search);
+      if (status) params = params.set('status', status);
+      if (priority) params = params.set('priority', priority);
     }
 
     return this.http.get<PaginationResult<TaskResult>>(`${this.apiUrl}/my`, {

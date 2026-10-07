@@ -96,6 +96,41 @@ describe('TaskService', () => {
     req.flush(mockPagedTasks);
   });
 
+  it('getAll_Should_SendGetRequestWithFilterParams_When_ParamsObjectProvided', (done) => {
+    service
+      .getAll({
+        page: 1,
+        pageSize: 15,
+        search: 'auth',
+        status: 'InProgress',
+        priority: 'High',
+        tag: 'backend',
+      })
+      .subscribe((result) => {
+        expect(result).toEqual(mockPagedTasks);
+        done();
+      });
+
+    const req = httpTesting.expectOne(
+      `${baseUrl}?page=1&pageSize=15&search=auth&status=InProgress&priority=High&tag=backend`
+    );
+    expect(req.request.method).toBe('GET');
+    expect(req.request.withCredentials).toBeTrue();
+    req.flush(mockPagedTasks);
+  });
+
+  it('getAll_Should_SendGetRequestWithWorkspaceId_When_WorkspaceIdProvided', (done) => {
+    service.getAll(1, 10, null, null, null, 'ws-123').subscribe((result) => {
+      expect(result).toEqual(mockPagedTasks);
+      done();
+    });
+
+    const req = httpTesting.expectOne(`${baseUrl}?page=1&pageSize=10&workspaceId=ws-123`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.withCredentials).toBeTrue();
+    req.flush(mockPagedTasks);
+  });
+
   it('getMy_Should_SendGetRequestWithFilters_When_Called', (done) => {
     service.getMy('assigned', 1, 10).subscribe((result) => {
       expect(result).toEqual(mockPagedTasks);
@@ -103,6 +138,29 @@ describe('TaskService', () => {
     });
 
     const req = httpTesting.expectOne(`${baseUrl}/my?page=1&pageSize=10&type=assigned`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.withCredentials).toBeTrue();
+    req.flush(mockPagedTasks);
+  });
+
+  it('getMy_Should_SendGetRequestWithFilterParams_When_ParamsObjectProvided', (done) => {
+    service
+      .getMy({
+        type: 'all',
+        page: 2,
+        pageSize: 25,
+        search: 'ui',
+        status: 'Todo',
+        priority: 'Medium',
+      })
+      .subscribe((result) => {
+        expect(result).toEqual(mockPagedTasks);
+        done();
+      });
+
+    const req = httpTesting.expectOne(
+      `${baseUrl}/my?page=2&pageSize=25&type=all&search=ui&status=Todo&priority=Medium`
+    );
     expect(req.request.method).toBe('GET');
     expect(req.request.withCredentials).toBeTrue();
     req.flush(mockPagedTasks);
