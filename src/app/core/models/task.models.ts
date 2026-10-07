@@ -4,6 +4,19 @@ export type Priority = 'Low' | 'Medium' | 'High' | 'Critical';
 
 export type MyTasksFilterType = 'all' | 'created' | 'assigned';
 
+export interface TaskFilterParams {
+  readonly workspaceId?: string | null;
+  readonly type?: string | null;
+  readonly search?: string | null;
+  readonly status?: string | null;
+  readonly priority?: string | null;
+  readonly assigneeId?: string | null;
+  readonly createdById?: string | null;
+  readonly tag?: string | null;
+  readonly page?: number;
+  readonly pageSize?: number;
+}
+
 export interface UserResult {
   readonly id: string;
   readonly email: string;
@@ -13,6 +26,7 @@ export interface UserResult {
 
 export interface TaskResult {
   readonly id: string;
+  readonly workspaceId?: string;
   readonly title: string;
   readonly description: string | null;
   readonly status: TaskStatus;
@@ -59,6 +73,7 @@ export interface PaginationResult<T> {
 }
 
 export interface CreateTaskRequest {
+  readonly workspaceId?: string | null;
   readonly title: string;
   readonly description?: string | null;
   readonly priority: Priority;
