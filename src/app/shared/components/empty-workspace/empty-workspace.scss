@@ -1,0 +1,163 @@
+:host {
+  display: block;
+  width: 100%;
+  --primary-color: #0078d4;
+  --primary-hover: #106ebe;
+  --primary-active: #005a9e;
+  --primary-focus-ring: rgba(0, 120, 212, 0.4);
+  --text-primary: #201f1e;
+  --text-secondary: #605e5c;
+  --bg-card: #ffffff;
+  --border-card: #edebe9;
+  --shadow-elevation: 0 4px 16px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.empty-workspace-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 440px;
+  padding: 3rem 1.5rem;
+  box-sizing: border-box;
+}
+
+.empty-workspace-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 520px;
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: 8px;
+  padding: 3rem 2.5rem;
+  box-shadow: var(--shadow-elevation);
+  box-sizing: border-box;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.empty-logo-wrapper {
+  margin-bottom: 1.75rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.empty-logo-svg {
+  display: block;
+  overflow: visible;
+
+  .floating-emblem {
+    animation: emblemFloat 3.5s ease-in-out infinite;
+    transform-origin: 80px 88px;
+  }
+
+  .sparkle-1 {
+    animation: sparklePulse 2.8s ease-in-out infinite;
+  }
+
+  .sparkle-2 {
+    animation: sparklePulse 3.2s ease-in-out 0.8s infinite;
+  }
+
+  .sparkle-3 {
+    animation: sparklePulse 2.4s ease-in-out 1.5s infinite;
+  }
+}
+
+.empty-text-content {
+  margin-bottom: 2rem;
+}
+
+.empty-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.75rem 0;
+  letter-spacing: -0.015em;
+}
+
+.empty-description {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin: 0;
+  max-width: 420px;
+}
+
+.empty-actions {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.btn-create-first {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 40px;
+  padding: 0 1.5rem;
+  background-color: var(--primary-color);
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 2px 6px rgba(0, 120, 212, 0.28);
+
+  &:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 120, 212, 0.35);
+  }
+
+  &:active {
+    background-color: var(--primary-active);
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0, 120, 212, 0.2);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--primary-focus-ring);
+  }
+
+  .btn-icon {
+    flex-shrink: 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes emblemFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes sparklePulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}

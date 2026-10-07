@@ -1,0 +1,143 @@
+<section class="empty-workspace-container" aria-label="Empty Workspace State">
+  <div class="empty-workspace-card">
+    <div class="empty-logo-wrapper">
+      <svg
+        class="empty-logo-svg"
+        width="160"
+        height="160"
+        viewBox="0 0 160 160"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        role="img"
+        aria-label="Empty workspace illustration"
+      >
+        <!-- Background Ambient Glow -->
+        <circle cx="80" cy="80" r="64" fill="url(#empty-ws-glow)" />
+
+        <!-- Perspective Base Platform / Board Backdrop -->
+        <rect
+          x="28"
+          y="42"
+          width="104"
+          height="80"
+          rx="12"
+          fill="url(#card-bg-gradient)"
+          stroke="#C7E0F4"
+          stroke-width="1.5"
+          filter="url(#empty-ws-shadow)"
+        />
+
+        <!-- Top Header Strip with Action Dots -->
+        <path
+          d="M28 54C28 47.3726 33.3726 42 40 42H120C126.627 42 132 47.3726 132 54V58H28V54Z"
+          fill="url(#header-gradient)"
+        />
+        <circle cx="40" cy="50" r="3" fill="#0078D4" opacity="0.6" />
+        <circle cx="48" cy="50" r="3" fill="#107C10" opacity="0.6" />
+        <circle cx="56" cy="50" r="3" fill="#D83B01" opacity="0.6" />
+
+        <!-- Placeholder Dashed Kanban Column / Board Outline -->
+        <rect
+          x="38"
+          y="66"
+          width="38"
+          height="46"
+          rx="6"
+          stroke="#0078D4"
+          stroke-width="1.5"
+          stroke-dasharray="3 3"
+          fill="#F3F9FE"
+          opacity="0.8"
+        />
+        <rect
+          x="84"
+          y="66"
+          width="38"
+          height="46"
+          rx="6"
+          stroke="#94A3B8"
+          stroke-width="1.5"
+          stroke-dasharray="3 3"
+          fill="#F8FAFC"
+          opacity="0.6"
+        />
+
+        <!-- Central Floating Azure Workspace Shield / Emblem -->
+        <g class="floating-emblem" filter="url(#shield-shadow)">
+          <circle cx="80" cy="88" r="26" fill="url(#shield-gradient)" />
+          <circle cx="80" cy="88" r="21" fill="#FFFFFF" opacity="0.15" />
+          <!-- Plus Icon Inside Emblem -->
+          <path
+            d="M80 77V99M69 88H91"
+            stroke="#FFFFFF"
+            stroke-width="3.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </g>
+
+        <!-- Subtle Floating Mini Sparkles / Dots -->
+        <circle cx="34" cy="34" r="2.5" fill="#00BCF2" class="sparkle-1" />
+        <circle cx="128" cy="36" r="3.5" fill="#0078D4" class="sparkle-2" />
+        <circle cx="126" cy="116" r="2" fill="#00BCF2" class="sparkle-3" />
+
+        <defs>
+          <radialGradient id="empty-ws-glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#0078D4" stop-opacity="0.18" />
+            <stop offset="60%" stop-color="#00BCF2" stop-opacity="0.06" />
+            <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+          </radialGradient>
+          <linearGradient id="card-bg-gradient" x1="28" y1="42" x2="132" y2="122" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FFFFFF" />
+            <stop offset="100%" stop-color="#F8FAFC" />
+          </linearGradient>
+          <linearGradient id="header-gradient" x1="28" y1="42" x2="132" y2="58" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#F1F5F9" />
+            <stop offset="100%" stop-color="#E2E8F0" />
+          </linearGradient>
+          <linearGradient id="shield-gradient" x1="54" y1="62" x2="106" y2="114" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#0078D4" />
+            <stop offset="100%" stop-color="#005A9E" />
+          </linearGradient>
+          <filter id="empty-ws-shadow" x="22" y="38" width="116" height="94" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+            <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.08" />
+          </filter>
+          <filter id="shield-shadow" x="48" y="58" width="64" height="66" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+            <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#0078D4" flood-opacity="0.35" />
+          </filter>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="empty-text-content">
+      <h2 class="empty-title">{{ title }}</h2>
+      <p class="empty-description">{{ description }}</p>
+    </div>
+
+    <div class="empty-actions">
+      <button
+        type="button"
+        class="btn-create-first"
+        (click)="onCreateClick()"
+        id="btn-create-first-workspace"
+        aria-label="Create first workspace"
+      >
+        <svg
+          class="btn-icon"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>{{ buttonText }}</span>
+      </button>
+    </div>
+  </div>
+</section>

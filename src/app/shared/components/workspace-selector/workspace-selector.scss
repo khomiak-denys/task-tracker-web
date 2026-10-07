@@ -40,7 +40,7 @@
   justify-content: center;
   color: #ffffff;
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: 1.125rem;
   letter-spacing: 0.5px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -191,6 +191,7 @@
     height: 7px;
     border-radius: 50%;
     flex-shrink: 0;
+    background-color: var(--primary-color, #0078D4);
   }
 
   .pill-code {
@@ -389,7 +390,7 @@
   justify-content: center;
   color: #ffffff;
   font-weight: 700;
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   flex-shrink: 0;
 }
 

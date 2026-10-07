@@ -103,6 +103,10 @@ button, input, textarea, select {
 }
 
 .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
   height: 30px;
   padding: 0 0.875rem;
   background: #0078d4;
@@ -111,14 +115,40 @@ button, input, textarea, select {
   border-radius: 2px;
   font-size: 0.8125rem;
   font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
+  vertical-align: middle;
+  box-sizing: border-box;
+
+  svg {
+    display: block;
+    flex-shrink: 0;
+  }
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+  }
 
   &:hover {
     background: #106ebe;
   }
+
+  &:disabled {
+    background: #f3f2f1;
+    color: #a19f9d;
+    border-color: #edebe9;
+    cursor: not-allowed;
+  }
 }
 
 .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
   height: 30px;
   padding: 0 0.75rem;
   background: transparent;
@@ -126,22 +156,106 @@ button, input, textarea, select {
   border: 1px solid #edebe9;
   border-radius: 2px;
   font-size: 0.8125rem;
+  line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
+  vertical-align: middle;
+  box-sizing: border-box;
+
+  svg {
+    display: block;
+    flex-shrink: 0;
+  }
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+  }
 
   &:hover {
     background: #f3f2f1;
   }
+
+  &:disabled {
+    background: #f3f2f1;
+    color: #a19f9d;
+    border-color: #edebe9;
+    cursor: not-allowed;
+  }
+}
+
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  height: 30px;
+  padding: 0 0.875rem;
+  background: #d13438;
+  color: #ffffff;
+  border: 1px solid #d13438;
+  border-radius: 2px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  vertical-align: middle;
+  box-sizing: border-box;
+
+  svg {
+    display: block;
+    flex-shrink: 0;
+  }
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+  }
+
+  &:hover:not(:disabled) {
+    background: #b1282c;
+    border-color: #b1282c;
+  }
+
+  &:disabled {
+    background: #f3f2f1;
+    color: #a19f9d;
+    border-color: #edebe9;
+    cursor: not-allowed;
+  }
 }
 
 .action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
   height: 24px;
   padding: 0 0.4375rem;
   border: 1px solid #edebe9;
   background: #ffffff;
   color: #323130;
   font-size: 0.75rem;
+  line-height: 1;
+  white-space: nowrap;
   border-radius: 2px;
   cursor: pointer;
+  vertical-align: middle;
+  box-sizing: border-box;
+
+  svg {
+    display: block;
+    flex-shrink: 0;
+  }
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+  }
 
   &:hover {
     background: #f3f2f1;
@@ -153,6 +267,10 @@ button, input, textarea, select {
 
   &.action-btn-success {
     color: #107c10;
+  }
+
+  &.action-btn-danger {
+    color: #a80000;
   }
 }
 
@@ -228,10 +346,13 @@ button, input, textarea, select {
   .modal-footer {
     display: flex;
     justify-content: flex-end;
+    align-items: center;
     gap: 0.5rem;
-    margin-top: 0.375rem;
-    padding-top: 0.625rem;
+    padding: 0.75rem 1rem;
     border-top: 1px solid #edebe9;
+    background: #faf9f8;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
   }
 
   .time-presets-grid {
@@ -342,19 +463,27 @@ button, input, textarea, select {
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  padding: 0.25rem 0.5rem;
+  height: 30px;
+  padding: 0 0.5rem;
   border: 1px solid #d2d0ce;
   border-radius: 2px;
   background: #ffffff;
   width: 100%;
+  box-sizing: border-box;
 
-  .search-icon { color: #605e5c; }
+  .search-icon {
+    color: #605e5c;
+    flex-shrink: 0;
+    display: block;
+  }
   input {
     border: none;
     outline: none;
     font-size: 0.8125rem;
     width: 100%;
     color: #201f1e;
+    line-height: 1;
+    background: transparent;
     &::placeholder { color: #a19f9d; }
   }
 }

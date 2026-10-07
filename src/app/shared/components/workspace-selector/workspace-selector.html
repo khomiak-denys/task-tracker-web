@@ -6,7 +6,7 @@
       [style.background-color]="selectedWorkspace?.color || '#0078D4'"
       [attr.aria-label]="selectedWorkspace?.name || 'Workspace'"
     >
-      <span class="badge-code">{{ selectedWorkspace?.code || 'WS' }}</span>
+      <span class="badge-code">{{ getWorkspaceInitial(selectedWorkspace) }}</span>
     </div>
 
     <div class="workspace-meta">
@@ -148,7 +148,7 @@
                     class="item-icon-badge"
                     [style.background-color]="ws.color"
                   >
-                    {{ ws.code }}
+                    {{ getWorkspaceInitial(ws) }}
                   </span>
                   <div class="item-text-wrap">
                     <div class="item-title-row">
