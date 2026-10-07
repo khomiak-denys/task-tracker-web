@@ -48,33 +48,18 @@ $az-task-gold: #ffb900;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.875rem 1.5rem 0.5rem;
+  padding: 1.125rem 1.5rem;
   border-bottom: 1px solid $az-border;
+  gap: 1rem;
 }
 
-.header-type-badge {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8125rem;
-
-  .type-icon-box {
-    color: $az-task-gold;
-    display: inline-flex;
-  }
-
-  .type-label {
-    font-weight: 700;
-    color: $az-text;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .item-id {
-    color: $az-subtext;
-    font-family: Consolas, monospace;
-    font-weight: 500;
-  }
+.blade-title-text {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: $az-text;
+  line-height: 1.35;
+  margin: 0;
+  flex: 1;
 }
 
 .blade-close-btn {
@@ -87,24 +72,12 @@ $az-task-gold: #ffb900;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 
   &:hover {
     background: #f3f2f1;
     color: $az-text;
   }
-}
-
-/* Title */
-.blade-title-container {
-  padding: 0.75rem 1.5rem 0.5rem;
-}
-
-.blade-title-text {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: $az-text;
-  line-height: 1.35;
-  margin: 0;
 }
 
 /* Command Ribbon */
@@ -116,7 +89,6 @@ $az-task-gold: #ffb900;
   gap: 1rem;
   padding: 0.625rem 1.5rem;
   background: $az-bg;
-  border-top: 1px solid $az-border;
   border-bottom: 1px solid $az-border;
 }
 
@@ -156,43 +128,6 @@ $az-task-gold: #ffb900;
     outline: none;
     border-color: $az-blue;
     box-shadow: 0 0 0 1px $az-blue;
-  }
-}
-
-.ribbon-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.ribbon-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.75rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  border-radius: 4px;
-  cursor: pointer;
-  border: 1px solid #d2d0ce;
-  background: #ffffff;
-  color: $az-text;
-  transition: background 0.15s;
-
-  &:hover {
-    background: #edebe9;
-  }
-
-  &.ribbon-btn-success {
-    background: #107c41;
-    color: #ffffff;
-    border-color: #107c41;
-    &:hover { background: #0b6a37; }
-  }
-
-  &.ribbon-btn-danger {
-    color: #a80000;
-    &:hover { background: #fde7e9; border-color: #a80000; }
   }
 }
 
@@ -452,14 +387,6 @@ $az-task-gold: #ffb900;
 
     &.date-val {
       font-size: 0.75rem;
-    }
-
-    &.id-code {
-      font-family: Consolas, monospace;
-      font-size: 0.6875rem;
-      max-width: 140px;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
   }
 }

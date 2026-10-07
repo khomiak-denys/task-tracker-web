@@ -127,10 +127,8 @@ describe('TaskDetailsComponent', () => {
     expect(component['getTotalLoggedMinutes']()).toBe(0);
   });
 
-  it('Comments_Should_GenerateMockComments_When_TaskHasNoPredefinedComments', () => {
-    expect(component['comments'].length).toBeGreaterThanOrEqual(2);
-    expect(component['comments'][0].taskId).toBe('task-101');
-    expect(component['comments'][0].content).toContain('Created work item "Migrate to Azure DevOps Board"');
+  it('Comments_Should_BeEmpty_When_TaskHasNoPredefinedComments', () => {
+    expect(component['comments']).toEqual([]);
   });
 
   it('Comments_Should_UseProvidedComments_When_TaskHasComments', () => {

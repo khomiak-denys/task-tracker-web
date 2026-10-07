@@ -169,62 +169,6 @@ export class TaskDetailsComponent {
       return;
     }
 
-    const mockComments = this.generateMockComments(task);
-    this.comments = mockComments;
-    this.taskCommentsMap.set(task.id, mockComments);
-  }
-
-  private generateMockComments(task: TaskDetailsResult): TaskComment[] {
-    const creatorUser = task.createdBy || {
-      id: 'creator-fallback',
-      userName: 'task_creator',
-      fullName: 'Product Owner',
-      email: 'owner@tasktracker.local',
-    };
-
-    const assigneeUser = task.assignee || {
-      id: 'assignee-fallback',
-      userName: 'lead_engineer',
-      fullName: 'Lead Engineer',
-      email: 'engineer@tasktracker.local',
-    };
-
-    const baseDate = task.createdAt ? new Date(task.createdAt) : new Date();
-
-    const comments: TaskComment[] = [
-      {
-        id: `mock-c1-${task.id}`,
-        taskId: task.id,
-        author: creatorUser,
-        content: `Created work item "${task.title}". Scope, acceptance criteria, and initial priorities have been attached.`,
-        createdAt: new Date(baseDate.getTime() + 10 * 60000).toISOString(),
-      },
-      {
-        id: `mock-c2-${task.id}`,
-        taskId: task.id,
-        author: assigneeUser,
-        content:
-          'Reviewed specifications. Technical architecture aligned and implementation is actively proceeding.',
-        createdAt: new Date(baseDate.getTime() + 120 * 60000).toISOString(),
-      },
-    ];
-
-    if (task.status === 'InReview' || task.status === 'Done') {
-      comments.push({
-        id: `mock-c3-${task.id}`,
-        taskId: task.id,
-        author: {
-          id: 'qa-tester',
-          userName: 'sarah_qa',
-          fullName: 'Sarah Connor',
-          email: 'sarah.qa@tasktracker.local',
-        },
-        content:
-          'Verification and regression tests passed across all target criteria.',
-        createdAt: new Date(baseDate.getTime() + 360 * 60000).toISOString(),
-      });
-    }
-
-    return comments;
+    this.comments = [];
   }
 }

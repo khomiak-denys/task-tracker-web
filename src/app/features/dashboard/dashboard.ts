@@ -31,10 +31,13 @@ import {
   CreateTaskRequest,
   LogTimeRequest,
 } from '../../core/models/task.models';
-import { Workspace, MOCK_WORKSPACES } from '../../core/models/workspace.models';
+import { Workspace, WorkspaceDetailsResult } from '../../core/models/workspace.models';
+import { UserService } from '../../core/services/user.service';
+import { UserResult } from '../../core/models/user.models';
 import { TaskDetailsComponent } from './task-details/task-details.component';
+import { EmptyWorkspaceComponent } from '../../shared/components/empty-workspace/empty-workspace';
 
-export type DashboardTab = 'board' | 'list' | 'statistics';
+export type DashboardTab = 'board' | 'list' | 'statistics' | 'settings';
 
 export interface StatisticsSummary {
   readonly total: number;
@@ -88,7 +91,7 @@ export interface DashboardState {
   readonly isLogTimeModalOpen: boolean;
   readonly taskForTimeLog: TaskResult | null;
   readonly workspaces: Workspace[];
-  readonly selectedWorkspace: Workspace;
+  readonly selectedWorkspace: Workspace | null;
 }
 
 export interface KpiSummary {
@@ -110,12 +113,28 @@ export interface KpiSummary {
     DatePipe,
     RouterLink,
     TaskDetailsComponent,
+    EmptyWorkspaceComponent,
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardComponent implements OnInit {
+  private readonly workspaceService = inject(WorkspaceService);
+  private readonly userService = inject(UserService);
+
+  protected readonly workspaceUpdateForm: FormGroup;
+  protected isUpdatingWorkspace = false;
+  protected isDeleteWorkspaceModalOpen = false;
+  protected isDeletingWorkspace = false;
+  protected isMembersModalOpen = false;
+  protected isLoadingMembers = false;
+  protected isAddingMember = false;
+  protected workspaceDetails: WorkspaceDetailsResult | null = null;
+  protected resolvedMembers: { userId: string; fullName: string; userName: string; email: string; isOwner: boolean }[] = [];
+  protected allUsers: UserResult[] = [];
+  protected selectedUserToAddId = '';
+
   private readonly stateSubject = new BehaviorSubject<DashboardState>({
     loading: false,
     dropdownOpen: false,
@@ -136,11 +155,13 @@ export class DashboardComponent implements OnInit {
     isCreateModalOpen: false,
     isLogTimeModalOpen: false,
     taskForTimeLog: null,
-    workspaces: MOCK_WORKSPACES,
-    selectedWorkspace: MOCK_WORKSPACES[0],
+    workspaces: [],
+    selectedWorkspace: null,
   });
 
   readonly state$: Observable<DashboardState> = this.stateSubject.asObservable();
+
+  readonly isWorkspacesNotFound$: Observable<boolean> = this.workspaceService?.isNotFound$ ?? of(false);
 
   readonly filteredTasks$: Observable<TaskResult[]> = this.state$.pipe(
     map((s) => this.filterTasks(s.tasks, s.searchQuery, s.statusFilter, s.priorityFilter)),
@@ -209,7 +230,6 @@ export class DashboardComponent implements OnInit {
   protected readonly logTimeForm: FormGroup;
 
   private readonly destroyRef = inject(DestroyRef);
-  private readonly workspaceService = inject(WorkspaceService);
 
   constructor(
     protected readonly authService: AuthService,
@@ -232,15 +252,38 @@ export class DashboardComponent implements OnInit {
       description: [''],
       loggedDate: [new Date().toISOString().substring(0, 10), [Validators.required]],
     });
+
+    this.workspaceUpdateForm = this.fb.group({
+      name: ['', [Validators.required, Validators.maxLength(100)]],
+      description: [''],
+    });
   }
 
   ngOnInit(): void {
     this.updateState({ userInitial: this.calculateUserInitial() });
-    this.workspaceService.selectedWorkspace$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((ws) => {
-        this.updateState({ selectedWorkspace: ws });
+    if (this.workspaceService?.memberWorkspaces$) {
+      this.workspaceService.memberWorkspaces$
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe((workspaces) => {
+          this.updateState({ workspaces });
+        });
+    }
+    if (this.workspaceService?.selectedWorkspace$) {
+      this.workspaceService.selectedWorkspace$
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe((ws) => {
+          this.updateState({ selectedWorkspace: ws });
+          if (ws && this.snapshot.activeTab === 'settings') {
+            this.initWorkspaceUpdateForm(ws);
+            this.loadWorkspaceDetails(ws.id);
+          }
+        });
+    }
+    if (typeof this.workspaceService?.loadWorkspaces === 'function') {
+      this.workspaceService.loadWorkspaces().subscribe({
+        error: () => {},
       });
+    }
     this.loadTasks();
   }
 
@@ -300,15 +343,237 @@ export class DashboardComponent implements OnInit {
       activeTab: tab,
       layoutMode: tab === 'list' ? 'list' : 'board',
     });
+    if (tab === 'settings' && this.snapshot.selectedWorkspace) {
+      this.initWorkspaceUpdateForm(this.snapshot.selectedWorkspace);
+      this.loadWorkspaceDetails(this.snapshot.selectedWorkspace.id);
+    }
   }
 
   protected onWorkspaceChange(workspace: Workspace): void {
     this.updateState({ selectedWorkspace: workspace });
+    if (this.snapshot.activeTab === 'settings') {
+      this.initWorkspaceUpdateForm(workspace);
+      this.loadWorkspaceDetails(workspace.id);
+    }
     this.notificationService.info(`Switched active workspace to: ${workspace.name}`);
   }
 
+  protected getWorkspaceInitial(ws?: Workspace | null): string {
+    return ws?.name?.trim()?.charAt(0)?.toUpperCase() ?? '';
+  }
+
+  protected initWorkspaceUpdateForm(ws: Workspace): void {
+    this.workspaceUpdateForm.patchValue({
+      name: ws.name,
+      description: ws.description || '',
+    });
+  }
+
+  protected canManageWorkspace(): boolean {
+    const ws = this.snapshot.selectedWorkspace;
+    return !!(this.authService.isAdmin() || ws?.role === 'Owner');
+  }
+
+  protected onUpdateWorkspace(): void {
+    const ws = this.snapshot.selectedWorkspace;
+    if (!ws || this.workspaceUpdateForm.invalid) {
+      this.workspaceUpdateForm.markAllAsTouched();
+      return;
+    }
+
+    this.isUpdatingWorkspace = true;
+    const { name, description } = this.workspaceUpdateForm.value;
+
+    this.workspaceService
+      .update(ws.id, {
+        name: name.trim(),
+        description: description ? description.trim() : null,
+      })
+      .subscribe({
+        next: () => {
+          this.isUpdatingWorkspace = false;
+          this.notificationService.success('Workspace updated successfully.');
+          this.workspaceService.loadWorkspaces().subscribe();
+          this.loadWorkspaceDetails(ws.id);
+        },
+        error: (err) => {
+          this.isUpdatingWorkspace = false;
+          this.notificationService.error(
+            err.error?.detail || err.error?.title || 'Failed to update workspace.'
+          );
+        },
+      });
+  }
+
+  protected openDeleteWorkspaceModal(): void {
+    if (!this.canManageWorkspace()) {
+      this.notificationService.error('You do not have permission to delete this workspace.');
+      return;
+    }
+    this.isDeleteWorkspaceModalOpen = true;
+  }
+
+  protected closeDeleteWorkspaceModal(): void {
+    this.isDeleteWorkspaceModalOpen = false;
+    this.isDeletingWorkspace = false;
+  }
+
+  protected confirmDeleteWorkspace(): void {
+    const ws = this.snapshot.selectedWorkspace;
+    if (!ws) return;
+
+    this.isDeletingWorkspace = true;
+    this.workspaceService.delete(ws.id).subscribe({
+      next: () => {
+        this.isDeletingWorkspace = false;
+        this.isDeleteWorkspaceModalOpen = false;
+        this.notificationService.success(`Workspace '${ws.name}' deleted.`);
+        this.workspaceService.deleteWorkspace(ws.id);
+        this.workspaceService.loadWorkspaces().subscribe();
+        this.setActiveTab('board');
+        this.loadTasks();
+      },
+      error: (err) => {
+        this.isDeletingWorkspace = false;
+        if (err?.status === 404) {
+          this.isDeleteWorkspaceModalOpen = false;
+          this.workspaceService.deleteWorkspace(ws.id);
+          this.setActiveTab('board');
+          this.loadTasks();
+          return;
+        }
+        this.notificationService.error(
+          err?.error?.detail || err?.error?.title || 'Failed to delete workspace.'
+        );
+      },
+    });
+  }
+
+  protected openMembersModal(): void {
+    this.isMembersModalOpen = true;
+    if (this.snapshot.selectedWorkspace) {
+      this.loadWorkspaceDetails(this.snapshot.selectedWorkspace.id);
+    }
+  }
+
+  protected closeMembersModal(): void {
+    this.isMembersModalOpen = false;
+    this.selectedUserToAddId = '';
+  }
+
+  protected loadWorkspaceDetails(workspaceId: string): void {
+    this.isLoadingMembers = true;
+    this.workspaceService.getById(workspaceId).subscribe({
+      next: (details) => {
+        this.workspaceDetails = details;
+        this.loadUsersAndResolveMembers(details);
+      },
+      error: (err) => {
+        this.isLoadingMembers = false;
+        this.notificationService.error(
+          err.error?.detail || 'Failed to load workspace details.'
+        );
+      },
+    });
+  }
+
+  private loadUsersAndResolveMembers(details: WorkspaceDetailsResult): void {
+    this.userService.getAll(1, 100).subscribe({
+      next: (res) => {
+        this.isLoadingMembers = false;
+        this.allUsers = res.items || [];
+
+        const memberIdSet = new Set<string>();
+        if (details.memberIds) {
+          details.memberIds.forEach((id) => memberIdSet.add(id));
+        }
+        if (details.members) {
+          details.members.forEach((m) => memberIdSet.add(m.userId));
+        }
+        if (details.ownerId) {
+          memberIdSet.add(details.ownerId);
+        }
+
+        const userMap = new Map<string, UserResult>();
+        this.allUsers.forEach((u) => userMap.set(u.id, u));
+
+        this.resolvedMembers = Array.from(memberIdSet).map((userId) => {
+          const user = userMap.get(userId);
+          return {
+            userId,
+            fullName: user?.fullName || user?.userName || `User (${userId.substring(0, 8)})`,
+            userName: user?.userName || 'unknown',
+            email: user?.email || '',
+            isOwner: userId === details.ownerId,
+          };
+        });
+      },
+      error: () => {
+        this.isLoadingMembers = false;
+        const memberIdSet = new Set<string>(
+          details.memberIds || details.members?.map((m) => m.userId) || []
+        );
+        if (details.ownerId) memberIdSet.add(details.ownerId);
+        this.resolvedMembers = Array.from(memberIdSet).map((userId) => ({
+          userId,
+          fullName: `User (${userId.substring(0, 8)})`,
+          userName: 'user',
+          email: '',
+          isOwner: userId === details.ownerId,
+        }));
+      },
+    });
+  }
+
+  protected get availableUsersToAdd(): UserResult[] {
+    const existingMemberIds = new Set(this.resolvedMembers.map((m) => m.userId));
+    return this.allUsers.filter((u) => !existingMemberIds.has(u.id));
+  }
+
+  protected onAddMember(): void {
+    const ws = this.snapshot.selectedWorkspace;
+    if (!this.selectedUserToAddId || !ws) return;
+    this.isAddingMember = true;
+    this.workspaceService.addMember(ws.id, { userId: this.selectedUserToAddId }).subscribe({
+      next: () => {
+        this.isAddingMember = false;
+        this.notificationService.success('Member added to workspace.');
+        this.selectedUserToAddId = '';
+        this.workspaceService.loadWorkspaces().subscribe();
+        this.loadWorkspaceDetails(ws.id);
+      },
+      error: (err) => {
+        this.isAddingMember = false;
+        this.notificationService.error(
+          err.error?.detail || err.error?.title || 'Failed to add member.'
+        );
+      },
+    });
+  }
+
+  protected onRemoveMember(memberUserId: string): void {
+    const ws = this.snapshot.selectedWorkspace;
+    if (!ws) return;
+    this.workspaceService.removeMember(ws.id, memberUserId).subscribe({
+      next: () => {
+        this.notificationService.success('Member removed from workspace.');
+        this.workspaceService.loadWorkspaces().subscribe();
+        this.loadWorkspaceDetails(ws.id);
+      },
+      error: (err) => {
+        this.notificationService.error(
+          err.error?.detail || err.error?.title || 'Failed to remove member.'
+        );
+      },
+    });
+  }
+
   protected onCreateWorkspace(): void {
-    this.notificationService.info('Workspace creation is simulated in mock mode. API integration pending.');
+    this.router.navigate(['/workspaces'], { queryParams: { create: 'true' } });
+  }
+
+  protected onCreateFirstWorkspace(): void {
+    this.router.navigate(['/workspaces'], { queryParams: { create: 'true' } });
   }
 
   protected resetFilters(): void {
@@ -488,6 +753,7 @@ export class DashboardComponent implements OnInit {
       this.createdTags.length > 0 ? [...this.createdTags] : formTagsArray;
 
     const request: CreateTaskRequest = {
+      workspaceId: this.workspaceService.currentWorkspace?.id || null,
       title: val.title.trim(),
       description: val.description?.trim() || null,
       priority: val.priority,
@@ -652,7 +918,11 @@ export class DashboardComponent implements OnInit {
 
   @HostListener('document:keydown.escape')
   protected onEscape(): void {
-    if (this.snapshot.isCreateModalOpen) {
+    if (this.isDeleteWorkspaceModalOpen) {
+      this.closeDeleteWorkspaceModal();
+    } else if (this.isMembersModalOpen) {
+      this.closeMembersModal();
+    } else if (this.snapshot.isCreateModalOpen) {
       this.closeCreateModal();
     } else if (this.snapshot.isLogTimeModalOpen) {
       this.closeLogTimeModal();

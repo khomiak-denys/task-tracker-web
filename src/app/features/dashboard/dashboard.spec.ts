@@ -1,11 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 import { DashboardComponent } from './dashboard';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { TaskService } from '../../core/services/task.service';
+import { WorkspaceService } from '../../core/services/workspace.service';
+import { UserService } from '../../core/services/user.service';
 import { TaskResult, TaskDetailsResult } from '../../core/models/task.models';
+import { Workspace } from '../../core/models/workspace.models';
 
 describe('DashboardComponent', () => {
   let component: DashboardComponent;
@@ -14,6 +17,33 @@ describe('DashboardComponent', () => {
   let notificationServiceSpy: jasmine.SpyObj<NotificationService>;
   let routerSpy: jasmine.SpyObj<Router>;
   let taskServiceSpy: jasmine.SpyObj<TaskService>;
+  let workspaceServiceSpy: jasmine.SpyObj<WorkspaceService>;
+  let userServiceSpy: jasmine.SpyObj<UserService>;
+  let isNotFoundSubject: BehaviorSubject<boolean>;
+
+  const testWorkspaces: Workspace[] = [
+    {
+      id: 'ws-arch-core',
+      name: 'Architecture Lab Core',
+      code: 'ARCH',
+      description: 'Clean architecture microservices, domain events & Aspire orchestrator',
+      role: 'Owner',
+      memberCount: 8,
+      taskCount: 6,
+      color: '#0078D4',
+      isDefault: true,
+    },
+    {
+      id: 'ws-frontend-web',
+      name: 'Frontend Web Portal',
+      code: 'WEB',
+      description: 'Angular 20 OnPush client, Azure DevOps board & design system',
+      role: 'Admin',
+      memberCount: 12,
+      taskCount: 14,
+      color: '#107C10',
+    },
+  ];
 
   const mockTasks: TaskResult[] = [
     {
@@ -67,7 +97,8 @@ describe('DashboardComponent', () => {
   };
 
   beforeEach(async () => {
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['currentUser', 'logout']);
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['currentUser', 'logout', 'isAdmin']);
+    authServiceSpy.isAdmin.and.returnValue(false);
     authServiceSpy.currentUser.and.returnValue({
       sub: 'user-123',
       email: 'test@example.com',
@@ -106,6 +137,78 @@ describe('DashboardComponent', () => {
     taskServiceSpy.cancel.and.returnValue(of(void 0));
     taskServiceSpy.logTime.and.returnValue(of(void 0));
 
+    isNotFoundSubject = new BehaviorSubject<boolean>(false);
+
+    workspaceServiceSpy = jasmine.createSpyObj<WorkspaceService>(
+      'WorkspaceService',
+      [
+        'selectWorkspace',
+        'loadWorkspaces',
+        'getById',
+        'update',
+        'addMember',
+        'removeMember',
+        'delete',
+        'deleteWorkspace',
+      ],
+      {
+        selectedWorkspace$: of(testWorkspaces[0]),
+        workspaces$: of(testWorkspaces),
+        memberWorkspaces$: of(testWorkspaces),
+        currentWorkspace: testWorkspaces[0],
+        isNotFound$: isNotFoundSubject.asObservable(),
+      }
+    );
+    workspaceServiceSpy.loadWorkspaces.and.returnValue(of(testWorkspaces));
+    workspaceServiceSpy.getById.and.returnValue(
+      of({
+        id: testWorkspaces[0].id,
+        name: testWorkspaces[0].name,
+        description: testWorkspaces[0].description,
+        ownerId: 'user-123',
+        memberIds: ['user-123', 'user-456'],
+        createdAt: '2026-10-01T00:00:00Z',
+        updatedAt: null,
+      })
+    );
+    workspaceServiceSpy.update.and.returnValue(of(void 0));
+    workspaceServiceSpy.addMember.and.returnValue(of(void 0));
+    workspaceServiceSpy.removeMember.and.returnValue(of(void 0));
+    workspaceServiceSpy.delete.and.returnValue(of(void 0));
+    workspaceServiceSpy.deleteWorkspace.and.returnValue(true);
+
+    userServiceSpy = jasmine.createSpyObj('UserService', ['getAll']);
+    userServiceSpy.getAll.and.returnValue(
+      of({
+        items: [
+          {
+            id: 'user-123',
+            fullName: 'Test User',
+            userName: 'test_user',
+            email: 'test@example.com',
+            roles: ['User'],
+          },
+          {
+            id: 'user-456',
+            fullName: 'Alice Member',
+            userName: 'alice',
+            email: 'alice@example.com',
+            roles: ['User'],
+          },
+          {
+            id: 'user-789',
+            fullName: 'Bob Dev',
+            userName: 'bob',
+            email: 'bob@example.com',
+            roles: ['User'],
+          },
+        ],
+        page: 1,
+        pageSize: 100,
+        totalCount: 3,
+      })
+    );
+
     await TestBed.configureTestingModule({
       imports: [DashboardComponent],
       providers: [
@@ -113,6 +216,8 @@ describe('DashboardComponent', () => {
         { provide: AuthService, useValue: authServiceSpy },
         { provide: NotificationService, useValue: notificationServiceSpy },
         { provide: TaskService, useValue: taskServiceSpy },
+        { provide: WorkspaceService, useValue: workspaceServiceSpy },
+        { provide: UserService, useValue: userServiceSpy },
       ],
     }).compileComponents();
 
@@ -541,6 +646,158 @@ describe('DashboardComponent', () => {
 
     expect(component.snapshot.dropdownOpen).toBeFalse();
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/workspaces']);
+  });
+
+  it('EmptyWorkspace_Should_Display_When_WorkspacesResponseIs404', () => {
+    isNotFoundSubject.next(true);
+    fixture.detectChanges();
+
+    const emptyContainer = fixture.nativeElement.querySelector('app-empty-workspace');
+    expect(emptyContainer).toBeTruthy();
+
+    const btn = fixture.nativeElement.querySelector('#btn-create-first-workspace');
+    expect(btn).toBeTruthy();
+    expect(btn.textContent).toContain('Create First Workspace');
+
+    const commandBar = fixture.nativeElement.querySelector('.command-bar');
+    expect(commandBar).toBeNull();
+  });
+
+  it('CreateFirstWorkspace_Should_NavigateToWorkspacesWithCreateParam', () => {
+    isNotFoundSubject.next(true);
+    fixture.detectChanges();
+
+    const btn = fixture.nativeElement.querySelector('#btn-create-first-workspace');
+    expect(btn).toBeTruthy();
+
+    btn.click();
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/workspaces'], {
+      queryParams: { create: 'true' },
+    });
+  });
+
+  describe('Workspace Settings & Members Management', () => {
+    it('setActiveTab_Should_PopulateFormAndFetchDetails_When_SettingsTabSelected', () => {
+      component['setActiveTab']('settings');
+
+      expect(component.snapshot.activeTab).toBe('settings');
+      expect(component['workspaceUpdateForm'].get('name')?.value).toBe(testWorkspaces[0].name);
+      expect(component['workspaceUpdateForm'].get('description')?.value).toBe(testWorkspaces[0].description);
+      expect(workspaceServiceSpy.getById).toHaveBeenCalledWith(testWorkspaces[0].id);
+      expect(userServiceSpy.getAll).toHaveBeenCalledWith(1, 100);
+      expect(component['resolvedMembers'].length).toBe(2);
+    });
+
+    it('onUpdateWorkspace_Should_CallUpdateService_When_Valid', () => {
+      component['setActiveTab']('settings');
+      component['workspaceUpdateForm'].patchValue({
+        name: 'Updated Workspace Name',
+        description: 'New Description',
+      });
+
+      component['onUpdateWorkspace']();
+
+      expect(workspaceServiceSpy.update).toHaveBeenCalledWith(testWorkspaces[0].id, {
+        name: 'Updated Workspace Name',
+        description: 'New Description',
+      });
+      expect(notificationServiceSpy.success).toHaveBeenCalledWith('Workspace updated successfully.');
+    });
+
+    it('onUpdateWorkspace_Should_NotCallUpdateService_When_Invalid', () => {
+      component['setActiveTab']('settings');
+      component['workspaceUpdateForm'].patchValue({
+        name: '',
+      });
+
+      component['onUpdateWorkspace']();
+
+      expect(workspaceServiceSpy.update).not.toHaveBeenCalled();
+    });
+
+    it('openMembersModal_Should_SetModalOpenAndLoadDetails', () => {
+      component['openMembersModal']();
+
+      expect(component['isMembersModalOpen']).toBeTrue();
+      expect(workspaceServiceSpy.getById).toHaveBeenCalledWith(testWorkspaces[0].id);
+    });
+
+    it('closeMembersModal_Should_SetModalCloseAndResetState', () => {
+      component['openMembersModal']();
+      component['selectedUserToAddId'] = 'user-789';
+
+      component['closeMembersModal']();
+
+      expect(component['isMembersModalOpen']).toBeFalse();
+      expect(component['selectedUserToAddId']).toBe('');
+    });
+
+    it('onAddMember_Should_CallAddMemberAndReload_When_ValidUserSelected', () => {
+      component['openMembersModal']();
+      component['selectedUserToAddId'] = 'user-789';
+
+      component['onAddMember']();
+
+      expect(workspaceServiceSpy.addMember).toHaveBeenCalledWith(testWorkspaces[0].id, {
+        userId: 'user-789',
+      });
+      expect(notificationServiceSpy.success).toHaveBeenCalledWith('Member added to workspace.');
+      expect(component['selectedUserToAddId']).toBe('');
+    });
+
+    it('onRemoveMember_Should_CallRemoveMemberAndReload_When_Invoked', () => {
+      component['openMembersModal']();
+
+      component['onRemoveMember']('user-456');
+
+      expect(workspaceServiceSpy.removeMember).toHaveBeenCalledWith(testWorkspaces[0].id, 'user-456');
+      expect(notificationServiceSpy.success).toHaveBeenCalledWith('Member removed from workspace.');
+    });
+
+    it('canManageWorkspace_Should_ReturnTrueForOwnerOrAdmin', () => {
+      // testWorkspaces[0] has role: 'Owner'
+      expect(component['canManageWorkspace']()).toBeTrue();
+
+      // Non-owner, non-admin
+      authServiceSpy.isAdmin = jasmine.createSpy('isAdmin').and.returnValue(false);
+      component['updateState']({
+        selectedWorkspace: { ...testWorkspaces[0], role: 'Reader' },
+      });
+      expect(component['canManageWorkspace']()).toBeFalse();
+    });
+
+    it('openDeleteWorkspaceModal_Should_OpenModal_When_UserCanManageWorkspace', () => {
+      component['openDeleteWorkspaceModal']();
+      expect(component['isDeleteWorkspaceModalOpen']).toBeTrue();
+    });
+
+    it('openDeleteWorkspaceModal_Should_ShowError_When_UserCannotManageWorkspace', () => {
+      component['updateState']({
+        selectedWorkspace: { ...testWorkspaces[0], role: 'Reader' },
+      });
+      component['openDeleteWorkspaceModal']();
+      expect(component['isDeleteWorkspaceModalOpen']).toBeFalse();
+      expect(notificationServiceSpy.error).toHaveBeenCalledWith('You do not have permission to delete this workspace.');
+    });
+
+    it('closeDeleteWorkspaceModal_Should_ResetState_When_Invoked', () => {
+      component['openDeleteWorkspaceModal']();
+      expect(component['isDeleteWorkspaceModalOpen']).toBeTrue();
+
+      component['closeDeleteWorkspaceModal']();
+      expect(component['isDeleteWorkspaceModalOpen']).toBeFalse();
+      expect(component['isDeletingWorkspace']).toBeFalse();
+    });
+
+    it('confirmDeleteWorkspace_Should_CallDeleteAndReload_When_Invoked', () => {
+      component['openDeleteWorkspaceModal']();
+      component['confirmDeleteWorkspace']();
+
+      expect(workspaceServiceSpy.delete).toHaveBeenCalledWith(testWorkspaces[0].id);
+      expect(workspaceServiceSpy.deleteWorkspace).toHaveBeenCalledWith(testWorkspaces[0].id);
+      expect(notificationServiceSpy.success).toHaveBeenCalledWith(`Workspace '${testWorkspaces[0].name}' deleted.`);
+      expect(component['isDeleteWorkspaceModalOpen']).toBeFalse();
+    });
   });
 });
 
