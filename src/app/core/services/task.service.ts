@@ -18,11 +18,19 @@ export class TaskService {
 
   constructor(private readonly http: HttpClient) {}
 
-  /** GET /api/v1/tasks?page={page}&pageSize={pageSize} */
-  getAll(page: number = 1, pageSize: number = 10): Observable<PaginationResult<TaskResult>> {
-    const params = new HttpParams()
+  /** GET /api/v1/tasks?page={page}&pageSize={pageSize}&workspaceId={workspaceId} */
+  getAll(
+    page: number = 1,
+    pageSize: number = 10,
+    workspaceId?: string | null,
+  ): Observable<PaginationResult<TaskResult>> {
+    let params = new HttpParams()
       .set('page', page.toString())
       .set('pageSize', pageSize.toString());
+
+    if (workspaceId) {
+      params = params.set('workspaceId', workspaceId);
+    }
 
     return this.http.get<PaginationResult<TaskResult>>(this.apiUrl, {
       params,
@@ -30,11 +38,12 @@ export class TaskService {
     });
   }
 
-  /** GET /api/v1/tasks/my?type={type}&page={page}&pageSize={pageSize} */
+  /** GET /api/v1/tasks/my?type={type}&page={page}&pageSize={pageSize}&workspaceId={workspaceId} */
   getMy(
     type?: string | null,
     page: number = 1,
     pageSize: number = 10,
+    workspaceId?: string | null,
   ): Observable<PaginationResult<TaskResult>> {
     let params = new HttpParams()
       .set('page', page.toString())
@@ -42,6 +51,10 @@ export class TaskService {
 
     if (type) {
       params = params.set('type', type);
+    }
+
+    if (workspaceId) {
+      params = params.set('workspaceId', workspaceId);
     }
 
     return this.http.get<PaginationResult<TaskResult>>(`${this.apiUrl}/my`, {

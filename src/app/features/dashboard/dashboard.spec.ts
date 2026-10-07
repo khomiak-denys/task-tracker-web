@@ -6,6 +6,8 @@ import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { TaskService } from '../../core/services/task.service';
 import { TaskResult, TaskDetailsResult } from '../../core/models/task.models';
+import { WorkspaceService } from '../../core/services/workspace.service';
+import { MOCK_WORKSPACES } from '../../core/models/workspace.models';
 
 describe('DashboardComponent', () => {
   let component: DashboardComponent;
@@ -18,6 +20,7 @@ describe('DashboardComponent', () => {
   const mockTasks: TaskResult[] = [
     {
       id: 'task-1',
+      workspaceId: 'ws-arch-core',
       title: 'Setup OTLP Tracing',
       description: 'Distributed tracing across services',
       status: 'InProgress',
@@ -28,6 +31,7 @@ describe('DashboardComponent', () => {
     },
     {
       id: 'task-2',
+      workspaceId: 'ws-arch-core',
       title: 'Fix Navigation Header',
       description: 'Align Azure logo and menu',
       status: 'Todo',
@@ -67,6 +71,7 @@ describe('DashboardComponent', () => {
   };
 
   beforeEach(async () => {
+    localStorage.clear();
     authServiceSpy = jasmine.createSpyObj('AuthService', ['currentUser', 'logout']);
     authServiceSpy.currentUser.and.returnValue({
       sub: 'user-123',
@@ -125,10 +130,14 @@ describe('DashboardComponent', () => {
     fixture.detectChanges();
   });
 
+  afterEach(() => {
+    localStorage.clear();
+  });
+
   it('Init_Should_LoadTasksAndComputeUserInitial_When_Created', () => {
     expect(component).toBeTruthy();
     expect(component.snapshot.userInitial).toBe('T');
-    expect(taskServiceSpy.getMy).toHaveBeenCalledWith('all', 1, 10);
+    expect(taskServiceSpy.getMy).toHaveBeenCalledWith('all', 1, 10, 'ws-arch-core');
     expect(component.snapshot.tasks.length).toBe(2);
   });
 
@@ -190,14 +199,14 @@ describe('DashboardComponent', () => {
     component['switchViewMode']('all-tasks');
 
     expect(component.snapshot.viewMode).toBe('all-tasks');
-    expect(taskServiceSpy.getAll).toHaveBeenCalledWith(1, 10);
+    expect(taskServiceSpy.getAll).toHaveBeenCalledWith(1, 10, 'ws-arch-core');
   });
 
   it('setMyFilterType_Should_UpdateFilterAndReload_When_Called', () => {
     component['setMyFilterType']('assigned');
 
     expect(component.snapshot.myFilterType).toBe('assigned');
-    expect(taskServiceSpy.getMy).toHaveBeenCalledWith('assigned', 1, 10);
+    expect(taskServiceSpy.getMy).toHaveBeenCalledWith('assigned', 1, 10, 'ws-arch-core');
   });
 
   it('filterTasks_Should_FilterTasksByQueryStatusAndPriority_When_FiltersChanged', (done) => {
@@ -257,7 +266,12 @@ describe('DashboardComponent', () => {
 
     component['onCreateTaskSubmit']();
 
-    expect(taskServiceSpy.create).toHaveBeenCalled();
+    expect(taskServiceSpy.create).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        workspaceId: 'ws-arch-core',
+        title: 'New Integration Test',
+      }),
+    );
     expect(notificationServiceSpy.success).toHaveBeenCalledWith('Task created successfully.');
     expect(component.snapshot.isCreateModalOpen).toBeFalse();
   });
@@ -534,6 +548,17 @@ describe('DashboardComponent', () => {
       expect(stats.completionRate).toBe(0);
       done();
     });
+  });
+
+  it('onWorkspaceChange_Should_SelectWorkspaceViaService_When_Triggered', () => {
+    const workspaceService = TestBed.inject(WorkspaceService);
+    const selectSpy = spyOn(workspaceService, 'selectWorkspace').and.callThrough();
+
+    const targetWs = MOCK_WORKSPACES[1];
+    component['onWorkspaceChange'](targetWs);
+
+    expect(selectSpy).toHaveBeenCalledWith(targetWs);
+    expect(notificationServiceSpy.info).toHaveBeenCalledWith(`Switched active workspace to: ${targetWs.name}`);
   });
 
   it('onWorkspaces_Should_CloseDropdownAndNavigateToWorkspaces', () => {

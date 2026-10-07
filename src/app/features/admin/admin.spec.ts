@@ -43,6 +43,7 @@ describe('AdminComponent', () => {
   const mockTasks: TaskResult[] = [
     {
       id: 'task-1',
+      workspaceId: 'ws-arch-core',
       title: 'Infrastructure Deployment',
       description: 'Deploy gateway and microservices',
       status: 'InProgress',

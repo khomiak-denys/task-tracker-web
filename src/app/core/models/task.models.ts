@@ -13,6 +13,7 @@ export interface UserResult {
 
 export interface TaskResult {
   readonly id: string;
+  readonly workspaceId: string;
   readonly title: string;
   readonly description: string | null;
   readonly status: TaskStatus;
@@ -59,6 +60,7 @@ export interface PaginationResult<T> {
 }
 
 export interface CreateTaskRequest {
+  readonly workspaceId: string;
   readonly title: string;
   readonly description?: string | null;
   readonly priority: Priority;

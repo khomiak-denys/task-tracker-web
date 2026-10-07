@@ -99,6 +99,16 @@
     </div>
   </header>
 
+  <!-- Workspace Selector Bar -->
+  @if (state$ | async; as state) {
+    <app-workspace-selector
+      [workspaces]="state.workspaces"
+      [selectedWorkspace]="state.selectedWorkspace"
+      (workspaceChange)="onWorkspaceChange($event)"
+      (createWorkspace)="onCreateWorkspace()"
+    ></app-workspace-selector>
+  }
+
   <!-- Azure DevOps Boards Toolbar: Actions & View Tabs -->
   <section class="command-bar" aria-label="Boards Toolbar">
     <div class="command-left">
