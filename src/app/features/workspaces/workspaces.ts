@@ -14,12 +14,13 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, combineLatest, map } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { BehaviorSubject, Observable, combineLatest, map, of } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { WorkspaceService } from '../../core/services/workspace.service';
 import { Workspace } from '../../core/models/workspace.models';
+import { EmptyWorkspaceComponent } from '../../shared/components/empty-workspace/empty-workspace';
 
 export interface WorkspacesState {
   readonly searchQuery: string;
@@ -47,7 +48,7 @@ const COLOR_OPTIONS = [
 @Component({
   selector: 'app-workspaces',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, EmptyWorkspaceComponent],
   templateUrl: './workspaces.html',
   styleUrl: './workspaces.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -56,12 +57,15 @@ export class WorkspacesComponent implements OnInit {
   private readonly workspaceService = inject(WorkspaceService);
   protected readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly notificationService = inject(NotificationService);
   private readonly fb = inject(FormBuilder);
   private readonly elementRef = inject(ElementRef);
 
   private readonly stateSubject = new BehaviorSubject<WorkspacesState>(initialState);
   readonly state$: Observable<WorkspacesState> = this.stateSubject.asObservable();
+
+  readonly isNotFound$: Observable<boolean> = this.workspaceService.isNotFound$ ?? of(false);
 
   readonly filteredWorkspaces$: Observable<Workspace[]> = combineLatest([
     this.workspaceService.memberWorkspaces$,
@@ -94,6 +98,18 @@ export class WorkspacesComponent implements OnInit {
 
   ngOnInit(): void {
     this.updateState({ userInitial: this.calculateUserInitial() });
+    if (this.route?.queryParams) {
+      this.route.queryParams.subscribe((params) => {
+        if (params['create'] === 'true') {
+          this.openCreateModal();
+        }
+      });
+    }
+    if (typeof this.workspaceService.loadWorkspaces === 'function') {
+      this.workspaceService.loadWorkspaces().subscribe({
+        error: () => {},
+      });
+    }
   }
 
   @HostListener('document:click', ['$event'])
@@ -192,5 +208,11 @@ export class WorkspacesComponent implements OnInit {
 
   private updateState(partial: Partial<WorkspacesState>): void {
     this.stateSubject.next({ ...this.stateSubject.value, ...partial });
+  }
+
+  getWorkspaceInitial(ws?: Workspace | null): string {
+    if (!ws?.name) return 'W';
+    const trimmed = ws.name.trim();
+    return trimmed ? trimmed.charAt(0).toUpperCase() : 'W';
   }
 }
