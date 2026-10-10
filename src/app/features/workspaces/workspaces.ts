@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
   HostListener,
   OnInit,
@@ -15,15 +16,22 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, combineLatest, map } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, combineLatest, map, of, switchMap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { WorkspaceService } from '../../core/services/workspace.service';
-import { Workspace } from '../../core/models/workspace.models';
+import {
+  Workspace,
+  WORKSPACE_COLOR_PALETTE,
+  generateWorkspaceCode,
+} from '../../core/models/workspace.models';
 
 export interface WorkspacesState {
   readonly searchQuery: string;
   readonly isCreateModalOpen: boolean;
+  readonly loading: boolean;
+  readonly submitting: boolean;
   readonly dropdownOpen: boolean;
   readonly userInitial: string;
 }
@@ -31,18 +39,11 @@ export interface WorkspacesState {
 const initialState: WorkspacesState = {
   searchQuery: '',
   isCreateModalOpen: false,
+  loading: false,
+  submitting: false,
   dropdownOpen: false,
   userInitial: 'U',
 };
-
-const COLOR_OPTIONS = [
-  '#0078D4', // Azure Blue
-  '#107C10', // Forest Green
-  '#5C2D91', // Purple
-  '#D83B01', // Orange
-  '#008272', // Teal
-  '#E3008C', // Magenta
-];
 
 @Component({
   selector: 'app-workspaces',
@@ -53,18 +54,19 @@ const COLOR_OPTIONS = [
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WorkspacesComponent implements OnInit {
-  private readonly workspaceService = inject(WorkspaceService);
+  protected readonly workspaceService = inject(WorkspaceService);
   protected readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly notificationService = inject(NotificationService);
   private readonly fb = inject(FormBuilder);
   private readonly elementRef = inject(ElementRef);
+  private readonly destroyRef = inject(DestroyRef);
 
   private readonly stateSubject = new BehaviorSubject<WorkspacesState>(initialState);
   readonly state$: Observable<WorkspacesState> = this.stateSubject.asObservable();
 
   readonly filteredWorkspaces$: Observable<Workspace[]> = combineLatest([
-    this.workspaceService.memberWorkspaces$,
+    this.workspaceService.workspaces$,
     this.state$.pipe(map((s) => s.searchQuery.trim().toLowerCase())),
   ]).pipe(
     map(([workspaces, query]) => {
@@ -74,26 +76,27 @@ export class WorkspacesComponent implements OnInit {
           w.name.toLowerCase().includes(query) ||
           w.code.toLowerCase().includes(query) ||
           w.description.toLowerCase().includes(query) ||
-          w.role.toLowerCase().includes(query)
+          w.role.toLowerCase().includes(query),
       );
-    })
+    }),
   );
 
   protected readonly createForm: FormGroup;
-  protected readonly colorOptions = COLOR_OPTIONS;
+  protected readonly colorOptions = WORKSPACE_COLOR_PALETTE;
 
   constructor() {
     this.createForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
-      description: ['', [Validators.required, Validators.minLength(5)]],
+      description: ['', [Validators.minLength(3)]],
       code: [''],
       role: ['Owner'],
-      color: [COLOR_OPTIONS[0]],
+      color: [WORKSPACE_COLOR_PALETTE[0]],
     });
   }
 
   ngOnInit(): void {
     this.updateState({ userInitial: this.calculateUserInitial() });
+    this.refreshWorkspaces();
   }
 
   @HostListener('document:click', ['$event'])
@@ -101,9 +104,35 @@ export class WorkspacesComponent implements OnInit {
     const target = event.target as HTMLElement;
     const userMenuContainer = this.elementRef.nativeElement.querySelector('.user-menu-container');
 
-    if (this.stateSubject.value.dropdownOpen && userMenuContainer && !userMenuContainer.contains(target)) {
+    if (
+      this.stateSubject.value.dropdownOpen &&
+      userMenuContainer &&
+      !userMenuContainer.contains(target)
+    ) {
       this.updateState({ dropdownOpen: false });
     }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.stateSubject.value.isCreateModalOpen) {
+      this.closeCreateModal();
+    } else {
+      this.updateState({ dropdownOpen: false });
+    }
+  }
+
+  protected refreshWorkspaces(): void {
+    this.updateState({ loading: true });
+    this.workspaceService
+      .loadWorkspaces()
+      .pipe(
+        catchError(() => of([])),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        this.updateState({ loading: false });
+      });
   }
 
   protected updateSearch(query: string): void {
@@ -114,19 +143,22 @@ export class WorkspacesComponent implements OnInit {
     this.updateState({ dropdownOpen: !this.stateSubject.value.dropdownOpen });
   }
 
+  // ==========================================
+  // CREATE WORKSPACE
+  // ==========================================
   protected openCreateModal(): void {
     this.createForm.reset({
       name: '',
       description: '',
       code: '',
       role: 'Owner',
-      color: COLOR_OPTIONS[0],
+      color: WORKSPACE_COLOR_PALETTE[0],
     });
     this.updateState({ isCreateModalOpen: true });
   }
 
   protected closeCreateModal(): void {
-    this.updateState({ isCreateModalOpen: false });
+    this.updateState({ isCreateModalOpen: false, submitting: false });
   }
 
   protected submitCreateWorkspace(): void {
@@ -136,36 +168,72 @@ export class WorkspacesComponent implements OnInit {
     }
 
     const formVal = this.createForm.value;
-    const generatedCode =
-      formVal.code?.trim().toUpperCase() ||
-      formVal.name
-        .trim()
-        .replace(/[^a-zA-Z0-9]/g, '')
-        .substring(0, 4)
-        .toUpperCase() ||
-      'WS';
+    const name = formVal.name.trim();
+    const description = formVal.description?.trim() || null;
+    const code = formVal.code?.trim().toUpperCase() || generateWorkspaceCode(name);
 
-    const created = this.workspaceService.createWorkspace({
-      name: formVal.name.trim(),
-      code: generatedCode,
-      description: formVal.description.trim(),
-      role: formVal.role || 'Owner',
-      color: formVal.color || COLOR_OPTIONS[0],
-      memberCount: 1,
-      taskCount: 0,
-    });
+    this.updateState({ submitting: true });
 
-    this.closeCreateModal();
-    this.notificationService.success(`Workspace "${created.name}" created successfully!`);
-    this.onSelectWorkspace(created);
+    this.workspaceService
+      .create({ name, description })
+      .pipe(
+        catchError((err) => {
+          // If error 403, notify Manager role is required
+          const status = err?.status;
+          if (status === 403) {
+            this.notificationService.error(
+              'Permission denied: Only users with the Manager role can create workspaces. Assign Manager role in Admin Console.',
+            );
+          } else {
+            this.notificationService.error(
+              err?.error?.detail || err?.error?.title || 'Failed to create workspace.',
+            );
+          }
+          this.updateState({ submitting: false });
+          return of(null);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((createdId) => {
+        this.updateState({ submitting: false });
+        if (createdId) {
+          this.closeCreateModal();
+          this.notificationService.success(`Workspace "${name}" created successfully!`);
+          this.workspaceService
+            .loadWorkspaces()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((workspaces) => {
+              const matched = workspaces.find((w) => w.id === createdId);
+              if (matched) {
+                this.onSelectWorkspace(matched);
+              }
+            });
+        }
+      });
   }
 
+  // ==========================================
+  // SELECTION & DEFAULT
+  // ==========================================
   protected onSelectWorkspace(workspace: Workspace): void {
     this.workspaceService.selectWorkspace(workspace);
     this.notificationService.info(`Switched to workspace: ${workspace.name}`);
     this.router.navigate(['/']);
   }
 
+  protected onSetDefault(workspace: Workspace, event?: Event): void {
+    event?.stopPropagation();
+    this.workspaceService.setDefaultWorkspace(workspace.id);
+    this.notificationService.success(`"${workspace.name}" set as your default workspace.`);
+  }
+
+  protected isCurrentActive(workspace: Workspace): boolean {
+    return this.workspaceService.currentWorkspace?.id === workspace.id;
+  }
+
+  // ==========================================
+  // NAVIGATION & PROFILE
+  // ==========================================
   protected onProfile(): void {
     this.updateState({ dropdownOpen: false });
     this.router.navigate(['/profile']);
@@ -180,6 +248,12 @@ export class WorkspacesComponent implements OnInit {
     this.updateState({ dropdownOpen: false });
     this.authService.logout();
     this.notificationService.info('You have been signed out.');
+  }
+
+  protected getWorkspaceInitial(name: string | null | undefined): string {
+    if (!name) return 'W';
+    const trimmed = name.trim();
+    return trimmed ? trimmed.charAt(0).toUpperCase() : 'W';
   }
 
   private calculateUserInitial(): string {

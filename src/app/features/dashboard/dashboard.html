@@ -3,14 +3,29 @@
   <header class="dashboard-header">
     <div class="header-left">
       <div class="azure-brand">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2L2 7V10C2 16.5 6.84 22.74 12 24C17.16 22.74 22 16.5 22 10V7L12 2Z"
-                fill="url(#dash-shield)" opacity="0.95"/>
-          <path d="M9 12L11 14L15 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 2L2 7V10C2 16.5 6.84 22.74 12 24C17.16 22.74 22 16.5 22 10V7L12 2Z"
+            fill="url(#dash-shield)"
+            opacity="0.95"
+          />
+          <path
+            d="M9 12L11 14L15 10"
+            stroke="white"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
           <defs>
             <linearGradient id="dash-shield" x1="2" y1="2" x2="22" y2="24">
-              <stop stop-color="#0078D4"/>
-              <stop offset="1" stop-color="#00BCF2"/>
+              <stop stop-color="#0078D4" />
+              <stop offset="1" stop-color="#00BCF2" />
             </linearGradient>
           </defs>
         </svg>
@@ -18,8 +33,13 @@
       </div>
       <div class="header-breadcrumb">
         <span class="breadcrumb-separator">/</span>
-        <a routerLink="/workspaces" class="breadcrumb-item breadcrumb-link" id="link-breadcrumb-workspaces" title="View all workspaces">
-          {{ (state$ | async)?.selectedWorkspace?.name || 'Architecture Lab Core' }}
+        <a
+          routerLink="/workspaces"
+          class="breadcrumb-item breadcrumb-link"
+          id="link-breadcrumb-workspaces"
+          title="View all workspaces"
+        >
+          {{ (state$ | async)?.selectedWorkspace?.name || 'Workspaces' }}
         </a>
         <span class="breadcrumb-separator">/</span>
         <span class="breadcrumb-current">Boards</span>
@@ -45,7 +65,6 @@
           @if (state.dropdownOpen) {
             <div class="user-dropdown" role="menu" id="user-dropdown-menu">
               <div class="dropdown-items">
-
                 <button
                   type="button"
                   class="dropdown-item"
@@ -53,7 +72,15 @@
                   role="menuitem"
                   id="menu-item-profile"
                 >
-                  <svg class="dropdown-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <svg
+                    class="dropdown-icon"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg>
@@ -68,14 +95,21 @@
                     role="menuitem"
                     id="menu-item-admin"
                   >
-                    <svg class="dropdown-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg
+                      class="dropdown-icon"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
                       <rect x="2" y="3" width="20" height="18" rx="2" ry="2"></rect>
                       <line x1="9" y1="3" x2="9" y2="21"></line>
                     </svg>
                     <span>Admin Console</span>
                   </button>
                 }
-
 
                 <button
                   type="button"
@@ -84,7 +118,15 @@
                   role="menuitem"
                   id="menu-item-logout"
                 >
-                  <svg class="dropdown-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <svg
+                    class="dropdown-icon"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                     <polyline points="16 17 21 12 16 7"></polyline>
                     <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -98,16 +140,6 @@
       }
     </div>
   </header>
-
-  <!-- Workspace Selector Bar -->
-  @if (state$ | async; as state) {
-    <app-workspace-selector
-      [workspaces]="state.workspaces"
-      [selectedWorkspace]="state.selectedWorkspace"
-      (workspaceChange)="onWorkspaceChange($event)"
-      (createWorkspace)="onCreateWorkspace()"
-    ></app-workspace-selector>
-  }
 
   <!-- Azure DevOps Boards Toolbar: Actions & View Tabs -->
   <section class="command-bar" aria-label="Boards Toolbar">
@@ -124,7 +156,14 @@
             [attr.aria-selected]="state.activeTab === 'board'"
             id="tab-board"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <rect x="3" y="3" width="5" height="18" rx="1"></rect>
               <rect x="10" y="3" width="5" height="12" rx="1"></rect>
               <rect x="17" y="3" width="5" height="15" rx="1"></rect>
@@ -141,7 +180,14 @@
             [attr.aria-selected]="state.activeTab === 'list'"
             id="tab-list"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <line x1="8" y1="6" x2="21" y2="6"></line>
               <line x1="8" y1="12" x2="21" y2="12"></line>
               <line x1="8" y1="18" x2="21" y2="18"></line>
@@ -161,7 +207,14 @@
             [attr.aria-selected]="state.activeTab === 'statistics'"
             id="tab-statistics"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <line x1="18" y1="20" x2="18" y2="10"></line>
               <line x1="12" y1="20" x2="12" y2="4"></line>
               <line x1="6" y1="20" x2="6" y2="14"></line>
@@ -180,7 +233,14 @@
         (click)="openCreateModal()"
         id="btn-create-task"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
@@ -197,7 +257,11 @@
         <section class="azure-board-wrapper" id="azure-devops-board" aria-label="Kanban Columns">
           <div class="board-canvas">
             @for (col of columns$ | async; track col.status) {
-              <div class="board-column" [class]="'board-column ' + col.colorClass" [id]="'column-' + col.status.toLowerCase()">
+              <div
+                class="board-column"
+                [class]="'board-column ' + col.colorClass"
+                [id]="'column-' + col.status.toLowerCase()"
+              >
                 <!-- Column Header -->
                 <div class="column-header">
                   <div class="column-title-box">
@@ -221,14 +285,6 @@
                       <div class="card-left-strip"></div>
                       <div class="card-inner">
                         <div class="card-top-row">
-                          <div class="card-type-id">
-                            <span class="task-type-glyph" title="Task">
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
-                              </svg>
-                            </span>
-                            <span class="card-id-text">#{{ task.id.substring(0, 6) }}</span>
-                          </div>
                           <span class="priority-pill priority-{{ task.priority.toLowerCase() }}">
                             {{ task.priority }}
                           </span>
@@ -252,7 +308,14 @@
                           <div class="card-footer-left">
                             @if (task.deadline) {
                               <span class="card-date-badge">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <svg
+                                  width="12"
+                                  height="12"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  stroke-width="2"
+                                >
                                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                                   <line x1="16" y1="2" x2="16" y2="6"></line>
                                   <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -265,7 +328,14 @@
                           <div class="card-footer-right">
                             @if (task.assigneeId) {
                               <span class="card-assignee-avatar" title="Assigned">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <svg
+                                  width="11"
+                                  height="11"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  stroke-width="2.5"
+                                >
                                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                                   <circle cx="12" cy="7" r="4"></circle>
                                 </svg>
@@ -286,7 +356,16 @@
                       title="New item"
                       aria-label="New item"
                     >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                       </svg>
@@ -302,7 +381,6 @@
       <!-- 2. LIST VIEW TAB -->
       @else if (state.activeTab === 'list') {
         <div class="azure-grid-card">
-
           <div class="grid-header-meta">
             <div class="meta-title-group">
               <h2 class="grid-title">Tasks Management</h2>
@@ -317,11 +395,11 @@
             <table class="azure-table" id="tasks-table">
               <thead>
                 <tr>
-                  <th scope="col" style="width: 130px;">Status</th>
-                  <th scope="col" style="width: 100px;">Priority</th>
+                  <th scope="col" style="width: 130px">Status</th>
+                  <th scope="col" style="width: 100px">Priority</th>
                   <th scope="col">Title & Scope</th>
-                  <th scope="col" style="width: 180px;">Tags</th>
-                  <th scope="col" style="width: 140px;">Deadline</th>
+                  <th scope="col" style="width: 180px">Tags</th>
+                  <th scope="col" style="width: 140px">Deadline</th>
                 </tr>
               </thead>
               <tbody>
@@ -370,14 +448,23 @@
                   <tr>
                     <td colspan="5" class="empty-row">
                       <div class="empty-state">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <svg
+                          width="40"
+                          height="40"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                        >
                           <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                           <line x1="16" y1="2" x2="16" y2="6"></line>
                           <line x1="8" y1="2" x2="8" y2="6"></line>
                           <line x1="3" y1="10" x2="21" y2="10"></line>
                         </svg>
                         <p class="empty-title">No tasks found</p>
-                        <p class="empty-subtitle">Try adjusting your filters or click "New Item" to register a task item.</p>
+                        <p class="empty-subtitle">
+                          Try adjusting your filters or click "New Item" to register a task item.
+                        </p>
                       </div>
                     </td>
                   </tr>
@@ -396,7 +483,14 @@
             <section class="stats-filter-panel" aria-label="Analytics Filtration">
               <div class="filter-panel-header">
                 <div class="filter-title-wrap">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
                     <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
                   </svg>
                   <h3 class="filter-panel-title">Filtration & Analytics Scope</h3>
@@ -499,7 +593,15 @@
                 <div class="filter-item filter-search-item">
                   <label for="stats-search-tasks" class="filter-item-label">Keyword</label>
                   <div class="search-box">
-                    <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg
+                      class="search-icon"
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
                       <circle cx="11" cy="11" r="8"></circle>
                       <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
@@ -570,50 +672,99 @@
                   <div class="distribution-item">
                     <div class="dist-header">
                       <span class="dist-name">To Do (New)</span>
-                      <span class="dist-nums">{{ stats.todo }} ({{ stats.total > 0 ? (stats.todo / stats.total * 100 | number: '1.0-0') : 0 }}%)</span>
+                      <span class="dist-nums"
+                        >{{ stats.todo }} ({{
+                          stats.total > 0
+                            ? ((stats.todo / stats.total) * 100 | number: '1.0-0')
+                            : 0
+                        }}%)</span
+                      >
                     </div>
                     <div class="dist-track">
-                      <div class="dist-fill fill-todo" [style.width.%]="stats.total > 0 ? (stats.todo / stats.total * 100) : 0"></div>
+                      <div
+                        class="dist-fill fill-todo"
+                        [style.width.%]="stats.total > 0 ? (stats.todo / stats.total) * 100 : 0"
+                      ></div>
                     </div>
                   </div>
 
                   <div class="distribution-item">
                     <div class="dist-header">
                       <span class="dist-name">In Progress (Active)</span>
-                      <span class="dist-nums">{{ stats.inProgress }} ({{ stats.total > 0 ? (stats.inProgress / stats.total * 100 | number: '1.0-0') : 0 }}%)</span>
+                      <span class="dist-nums"
+                        >{{ stats.inProgress }} ({{
+                          stats.total > 0
+                            ? ((stats.inProgress / stats.total) * 100 | number: '1.0-0')
+                            : 0
+                        }}%)</span
+                      >
                     </div>
                     <div class="dist-track">
-                      <div class="dist-fill fill-inprogress" [style.width.%]="stats.total > 0 ? (stats.inProgress / stats.total * 100) : 0"></div>
+                      <div
+                        class="dist-fill fill-inprogress"
+                        [style.width.%]="
+                          stats.total > 0 ? (stats.inProgress / stats.total) * 100 : 0
+                        "
+                      ></div>
                     </div>
                   </div>
 
                   <div class="distribution-item">
                     <div class="dist-header">
                       <span class="dist-name">In Review (Validation)</span>
-                      <span class="dist-nums">{{ stats.inReview }} ({{ stats.total > 0 ? (stats.inReview / stats.total * 100 | number: '1.0-0') : 0 }}%)</span>
+                      <span class="dist-nums"
+                        >{{ stats.inReview }} ({{
+                          stats.total > 0
+                            ? ((stats.inReview / stats.total) * 100 | number: '1.0-0')
+                            : 0
+                        }}%)</span
+                      >
                     </div>
                     <div class="dist-track">
-                      <div class="dist-fill fill-inreview" [style.width.%]="stats.total > 0 ? (stats.inReview / stats.total * 100) : 0"></div>
+                      <div
+                        class="dist-fill fill-inreview"
+                        [style.width.%]="stats.total > 0 ? (stats.inReview / stats.total) * 100 : 0"
+                      ></div>
                     </div>
                   </div>
 
                   <div class="distribution-item">
                     <div class="dist-header">
                       <span class="dist-name">Done (Closed)</span>
-                      <span class="dist-nums">{{ stats.done }} ({{ stats.total > 0 ? (stats.done / stats.total * 100 | number: '1.0-0') : 0 }}%)</span>
+                      <span class="dist-nums"
+                        >{{ stats.done }} ({{
+                          stats.total > 0
+                            ? ((stats.done / stats.total) * 100 | number: '1.0-0')
+                            : 0
+                        }}%)</span
+                      >
                     </div>
                     <div class="dist-track">
-                      <div class="dist-fill fill-done" [style.width.%]="stats.total > 0 ? (stats.done / stats.total * 100) : 0"></div>
+                      <div
+                        class="dist-fill fill-done"
+                        [style.width.%]="stats.total > 0 ? (stats.done / stats.total) * 100 : 0"
+                      ></div>
                     </div>
                   </div>
 
                   <div class="distribution-item">
                     <div class="dist-header">
                       <span class="dist-name">Cancelled</span>
-                      <span class="dist-nums">{{ stats.cancelled }} ({{ stats.total > 0 ? (stats.cancelled / stats.total * 100 | number: '1.0-0') : 0 }}%)</span>
+                      <span class="dist-nums"
+                        >{{ stats.cancelled }} ({{
+                          stats.total > 0
+                            ? ((stats.cancelled / stats.total) * 100 | number: '1.0-0')
+                            : 0
+                        }}%)</span
+                      >
                     </div>
                     <div class="dist-track">
-                      <div class="dist-fill fill-cancelled" [style.width.%]="stats.total > 0 ? (stats.cancelled / stats.total * 100) : 0"></div>
+                      <div
+                        class="dist-fill fill-cancelled"
+                        [style.width.%]="
+                          stats.total > 0 ? (stats.cancelled / stats.total) * 100 : 0
+                        "
+                      ></div>
                     </div>
                   </div>
                 </div>
@@ -627,40 +778,74 @@
                   <div class="distribution-item">
                     <div class="dist-header">
                       <span class="dist-name">Critical</span>
-                      <span class="dist-nums">{{ stats.critical }} ({{ stats.total > 0 ? (stats.critical / stats.total * 100 | number: '1.0-0') : 0 }}%)</span>
+                      <span class="dist-nums"
+                        >{{ stats.critical }} ({{
+                          stats.total > 0
+                            ? ((stats.critical / stats.total) * 100 | number: '1.0-0')
+                            : 0
+                        }}%)</span
+                      >
                     </div>
                     <div class="dist-track">
-                      <div class="dist-fill fill-critical" [style.width.%]="stats.total > 0 ? (stats.critical / stats.total * 100) : 0"></div>
+                      <div
+                        class="dist-fill fill-critical"
+                        [style.width.%]="stats.total > 0 ? (stats.critical / stats.total) * 100 : 0"
+                      ></div>
                     </div>
                   </div>
 
                   <div class="distribution-item">
                     <div class="dist-header">
                       <span class="dist-name">High</span>
-                      <span class="dist-nums">{{ stats.high }} ({{ stats.total > 0 ? (stats.high / stats.total * 100 | number: '1.0-0') : 0 }}%)</span>
+                      <span class="dist-nums"
+                        >{{ stats.high }} ({{
+                          stats.total > 0
+                            ? ((stats.high / stats.total) * 100 | number: '1.0-0')
+                            : 0
+                        }}%)</span
+                      >
                     </div>
                     <div class="dist-track">
-                      <div class="dist-fill fill-high" [style.width.%]="stats.total > 0 ? (stats.high / stats.total * 100) : 0"></div>
+                      <div
+                        class="dist-fill fill-high"
+                        [style.width.%]="stats.total > 0 ? (stats.high / stats.total) * 100 : 0"
+                      ></div>
                     </div>
                   </div>
 
                   <div class="distribution-item">
                     <div class="dist-header">
                       <span class="dist-name">Medium</span>
-                      <span class="dist-nums">{{ stats.medium }} ({{ stats.total > 0 ? (stats.medium / stats.total * 100 | number: '1.0-0') : 0 }}%)</span>
+                      <span class="dist-nums"
+                        >{{ stats.medium }} ({{
+                          stats.total > 0
+                            ? ((stats.medium / stats.total) * 100 | number: '1.0-0')
+                            : 0
+                        }}%)</span
+                      >
                     </div>
                     <div class="dist-track">
-                      <div class="dist-fill fill-medium" [style.width.%]="stats.total > 0 ? (stats.medium / stats.total * 100) : 0"></div>
+                      <div
+                        class="dist-fill fill-medium"
+                        [style.width.%]="stats.total > 0 ? (stats.medium / stats.total) * 100 : 0"
+                      ></div>
                     </div>
                   </div>
 
                   <div class="distribution-item">
                     <div class="dist-header">
                       <span class="dist-name">Low</span>
-                      <span class="dist-nums">{{ stats.low }} ({{ stats.total > 0 ? (stats.low / stats.total * 100 | number: '1.0-0') : 0 }}%)</span>
+                      <span class="dist-nums"
+                        >{{ stats.low }} ({{
+                          stats.total > 0 ? ((stats.low / stats.total) * 100 | number: '1.0-0') : 0
+                        }}%)</span
+                      >
                     </div>
                     <div class="dist-track">
-                      <div class="dist-fill fill-low" [style.width.%]="stats.total > 0 ? (stats.low / stats.total * 100) : 0"></div>
+                      <div
+                        class="dist-fill fill-low"
+                        [style.width.%]="stats.total > 0 ? (stats.low / stats.total) * 100 : 0"
+                      ></div>
                     </div>
                   </div>
                 </div>
@@ -703,9 +888,15 @@
             class="azure-input"
           />
           <div class="field-error-slot" aria-live="polite">
-            @if (createTaskForm.get('title')?.touched && createTaskForm.get('title')?.errors?.['required']) {
+            @if (
+              createTaskForm.get('title')?.touched &&
+              createTaskForm.get('title')?.errors?.['required']
+            ) {
               <span class="field-error">Title is required.</span>
-            } @else if (createTaskForm.get('title')?.touched && createTaskForm.get('title')?.errors?.['minlength']) {
+            } @else if (
+              createTaskForm.get('title')?.touched &&
+              createTaskForm.get('title')?.errors?.['minlength']
+            ) {
               <span class="field-error">Title must be at least 3 characters.</span>
             }
           </div>
@@ -745,7 +936,14 @@
                   (click)="removeCreatedTag(tag, $event)"
                   [attr.aria-label]="'Remove tag ' + tag"
                 >
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                  >
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                   </svg>
@@ -761,7 +959,9 @@
               (input)="onTagInput($any($event.target).value)"
               (keydown)="onTagKeyDown($event)"
               (blur)="onTagBlur()"
-              [placeholder]="createdTags.length === 0 ? 'e.g. Security, Auth, Gateway' : 'Add another tag...'"
+              [placeholder]="
+                createdTags.length === 0 ? 'e.g. Security, Auth, Gateway' : 'Add another tag...'
+              "
             />
           </div>
         </div>
@@ -778,7 +978,9 @@
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeCreateModal()">Cancel</button>
+          <button type="button" class="btn btn-secondary" (click)="closeCreateModal()">
+            Cancel
+          </button>
           <button type="submit" class="btn btn-primary" [disabled]="createTaskForm.invalid">
             Save Item
           </button>
@@ -799,31 +1001,24 @@
       <form [formGroup]="logTimeForm" (ngSubmit)="onLogTimeSubmit()" class="azure-modal-form">
         <div class="form-field">
           <label for="log-minutes">Duration <span class="required">*</span></label>
-          <select
-            id="log-minutes"
-            formControlName="minutesSpent"
-            class="azure-select"
-          >
+          <select id="log-minutes" formControlName="minutesSpent" class="azure-select">
             @for (preset of timePresets; track preset.minutes) {
               <option [ngValue]="preset.minutes">{{ preset.description }}</option>
             }
           </select>
           <div class="field-error-slot" aria-live="polite">
-            @if (logTimeForm.get('minutesSpent')?.touched && logTimeForm.get('minutesSpent')?.errors?.['required']) {
+            @if (
+              logTimeForm.get('minutesSpent')?.touched &&
+              logTimeForm.get('minutesSpent')?.errors?.['required']
+            ) {
               <span class="field-error">Duration is required.</span>
             }
           </div>
         </div>
 
-
         <div class="form-field">
           <label for="log-date">Date <span class="required">*</span></label>
-          <input
-            id="log-date"
-            type="date"
-            formControlName="loggedDate"
-            class="azure-input"
-          />
+          <input id="log-date" type="date" formControlName="loggedDate" class="azure-input" />
         </div>
 
         <div class="form-field">
@@ -838,7 +1033,9 @@
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeLogTimeModal()">Cancel</button>
+          <button type="button" class="btn btn-secondary" (click)="closeLogTimeModal()">
+            Cancel
+          </button>
           <button type="submit" class="btn btn-primary" [disabled]="logTimeForm.invalid">
             Record Time
           </button>

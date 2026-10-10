@@ -6,7 +6,7 @@
       [style.background-color]="selectedWorkspace?.color || '#0078D4'"
       [attr.aria-label]="selectedWorkspace?.name || 'Workspace'"
     >
-      <span class="badge-code">{{ selectedWorkspace?.code || 'WS' }}</span>
+      <span class="badge-code">{{ getWorkspaceInitial(selectedWorkspace?.name) }}</span>
     </div>
 
     <div class="workspace-meta">
@@ -28,7 +28,14 @@
         <span class="workspace-code-tag">Code: {{ selectedWorkspace?.code || 'N/A' }}</span>
         <span class="meta-dot">•</span>
         <span class="workspace-stat">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
             <circle cx="9" cy="7" r="4"></circle>
             <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -38,7 +45,14 @@
         </span>
         <span class="meta-dot">•</span>
         <span class="workspace-stat">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <polyline points="9 11 12 14 22 4"></polyline>
             <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
           </svg>
@@ -66,10 +80,7 @@
           [attr.aria-selected]="ws.id === selectedWorkspace?.id"
           [title]="ws.description"
         >
-          <span
-            class="pill-color-indicator"
-            [style.background-color]="ws.color"
-          ></span>
+          <span class="pill-color-indicator" [style.background-color]="ws.color"></span>
           <span class="pill-code">{{ ws.code }}</span>
           <span class="pill-name">{{ ws.name }}</span>
         </button>
@@ -87,7 +98,14 @@
         aria-haspopup="true"
         [attr.aria-expanded]="isDropdownOpen"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
           <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
           <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
         </svg>
@@ -111,12 +129,22 @@
         <div class="ws-dropdown-menu" role="menu" id="ws-dropdown-menu">
           <div class="dropdown-header">
             <span class="dropdown-title">Select Active Workspace</span>
-            <span class="dropdown-count">{{ filteredWorkspaces.length }} of {{ workspaces.length }}</span>
+            <span class="dropdown-count"
+              >{{ filteredWorkspaces.length }} of {{ workspaces.length }}</span
+            >
           </div>
 
           <!-- Filter Search Box -->
           <div class="search-box-wrap">
-            <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg
+              class="search-icon"
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
@@ -144,10 +172,7 @@
                 [attr.id]="'ws-item-' + ws.id"
               >
                 <div class="item-left">
-                  <span
-                    class="item-icon-badge"
-                    [style.background-color]="ws.color"
-                  >
+                  <span class="item-icon-badge" [style.background-color]="ws.color">
                     {{ ws.code }}
                   </span>
                   <div class="item-text-wrap">
@@ -163,7 +188,15 @@
 
                 <div class="item-right">
                   @if (ws.id === selectedWorkspace?.id) {
-                    <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0078D4" stroke-width="2.5">
+                    <svg
+                      class="check-icon"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#0078D4"
+                      stroke-width="2.5"
+                    >
                       <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>
                   }
@@ -184,7 +217,14 @@
               (click)="onCreateWorkspace($event)"
               id="btn-create-workspace"
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
               </svg>

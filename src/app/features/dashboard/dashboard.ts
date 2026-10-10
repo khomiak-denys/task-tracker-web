@@ -31,9 +31,8 @@ import {
   CreateTaskRequest,
   LogTimeRequest,
 } from '../../core/models/task.models';
-import { Workspace, MOCK_WORKSPACES } from '../../core/models/workspace.models';
+import { Workspace } from '../../core/models/workspace.models';
 import { TaskDetailsComponent } from './task-details/task-details.component';
-import { WorkspaceSelectorComponent } from '../../shared/components/workspace-selector/workspace-selector';
 
 export type DashboardTab = 'board' | 'list' | 'statistics';
 
@@ -89,7 +88,7 @@ export interface DashboardState {
   readonly isLogTimeModalOpen: boolean;
   readonly taskForTimeLog: TaskResult | null;
   readonly workspaces: Workspace[];
-  readonly selectedWorkspace: Workspace;
+  readonly selectedWorkspace: Workspace | null;
 }
 
 export interface KpiSummary {
@@ -111,13 +110,13 @@ export interface KpiSummary {
     DatePipe,
     RouterLink,
     TaskDetailsComponent,
-    WorkspaceSelectorComponent,
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardComponent implements OnInit {
+  private readonly workspaceService = inject(WorkspaceService);
   private readonly stateSubject = new BehaviorSubject<DashboardState>({
     loading: false,
     dropdownOpen: false,
@@ -138,8 +137,8 @@ export class DashboardComponent implements OnInit {
     isCreateModalOpen: false,
     isLogTimeModalOpen: false,
     taskForTimeLog: null,
-    workspaces: MOCK_WORKSPACES,
-    selectedWorkspace: MOCK_WORKSPACES[0],
+    workspaces: [],
+    selectedWorkspace: null,
   });
 
   readonly state$: Observable<DashboardState> = this.stateSubject.asObservable();
@@ -161,7 +160,10 @@ export class DashboardComponent implements OnInit {
     ),
   );
 
-  readonly stats$: Observable<StatisticsSummary> = combineLatest([this.filteredTasks$, this.state$]).pipe(
+  readonly stats$: Observable<StatisticsSummary> = combineLatest([
+    this.filteredTasks$,
+    this.state$,
+  ]).pipe(
     map(([filtered, state]) => {
       const total = filtered.length;
       const todo = filtered.filter((t) => t.status === 'Todo').length;
@@ -211,7 +213,6 @@ export class DashboardComponent implements OnInit {
   protected readonly logTimeForm: FormGroup;
 
   private readonly destroyRef = inject(DestroyRef);
-  private readonly workspaceService = inject(WorkspaceService);
 
   constructor(
     protected readonly authService: AuthService,
@@ -239,17 +240,15 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     this.updateState({ userInitial: this.calculateUserInitial() });
 
-    this.workspaceService.workspaces$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((workspaces) => {
-        this.updateState({ workspaces });
-      });
-
     this.workspaceService.selectedWorkspace$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((ws) => {
         this.updateState({ selectedWorkspace: ws, page: 1 });
-        this.loadTasks();
+        if (ws?.id) {
+          this.loadTasks();
+        } else {
+          this.updateState({ loading: false, tasks: [], totalCount: 0 });
+        }
       });
   }
 
@@ -259,10 +258,17 @@ export class DashboardComponent implements OnInit {
   }
 
   protected loadTasks(): void {
-    this.updateState({ loading: true });
     const current = this.snapshot;
+    const workspaceId =
+      current.selectedWorkspace?.id || this.workspaceService.currentWorkspace?.id || null;
 
-    const workspaceId = current.selectedWorkspace?.id || null;
+    if (!workspaceId) {
+      this.updateState({ loading: false, tasks: [], totalCount: 0 });
+      return;
+    }
+
+    this.updateState({ loading: true });
+
     const request$ =
       current.viewMode === 'my-tasks'
         ? this.taskService.getMy(current.myFilterType, current.page, current.pageSize, workspaceId)
@@ -318,7 +324,9 @@ export class DashboardComponent implements OnInit {
   }
 
   protected onCreateWorkspace(): void {
-    this.notificationService.info('Workspace creation is simulated in mock mode. API integration pending.');
+    this.notificationService.info(
+      'Workspace creation is simulated in mock mode. API integration pending.',
+    );
   }
 
   protected resetFilters(): void {
@@ -418,11 +426,7 @@ export class DashboardComponent implements OnInit {
         this.addCreatedTag(this.tagInputText);
         this.tagInputText = '';
       }
-    } else if (
-      event.key === 'Backspace' &&
-      !this.tagInputText &&
-      this.createdTags.length > 0
-    ) {
+    } else if (event.key === 'Backspace' && !this.tagInputText && this.createdTags.length > 0) {
       this.removeCreatedTag(this.createdTags[this.createdTags.length - 1]);
     }
   }
@@ -436,25 +440,16 @@ export class DashboardComponent implements OnInit {
 
   protected addCreatedTag(tag: string): void {
     const trimmed = tag.trim();
-    if (
-      trimmed &&
-      !this.createdTags.some(
-        (t) => t.toLowerCase() === trimmed.toLowerCase(),
-      )
-    ) {
+    if (trimmed && !this.createdTags.some((t) => t.toLowerCase() === trimmed.toLowerCase())) {
       this.createdTags = [...this.createdTags, trimmed];
-      this.createTaskForm
-        .get('tags')
-        ?.setValue(this.createdTags.join(', '));
+      this.createTaskForm.get('tags')?.setValue(this.createdTags.join(', '));
     }
   }
 
   protected removeCreatedTag(tag: string, event?: Event): void {
     event?.stopPropagation();
     this.createdTags = this.createdTags.filter((t) => t !== tag);
-    this.createTaskForm
-      .get('tags')
-      ?.setValue(this.createdTags.join(', '));
+    this.createTaskForm.get('tags')?.setValue(this.createdTags.join(', '));
   }
 
   protected openCreateModal(): void {
@@ -494,11 +489,15 @@ export class DashboardComponent implements OnInit {
           .map((t: string) => t.trim())
           .filter((t: string) => !!t)
       : [];
-    const tagsArray =
-      this.createdTags.length > 0 ? [...this.createdTags] : formTagsArray;
+    const tagsArray = this.createdTags.length > 0 ? [...this.createdTags] : formTagsArray;
 
     const activeWorkspaceId =
       this.snapshot.selectedWorkspace?.id || this.workspaceService.currentWorkspace?.id || '';
+
+    if (!activeWorkspaceId) {
+      this.notificationService.error('Please select or create a workspace before creating tasks.');
+      return;
+    }
 
     const request: CreateTaskRequest = {
       workspaceId: activeWorkspaceId,
@@ -603,7 +602,6 @@ export class DashboardComponent implements OnInit {
     this.updateState({ isLogTimeModalOpen: false, taskForTimeLog: null });
   }
 
-
   protected onLogTimeSubmit(): void {
     if (this.logTimeForm.invalid || !this.snapshot.taskForTimeLog) {
       this.logTimeForm.markAllAsTouched();
@@ -647,7 +645,6 @@ export class DashboardComponent implements OnInit {
     this.closeDropdown();
     this.router.navigate(['/admin']);
   }
-
 
   protected onLogout(): void {
     this.closeDropdown();

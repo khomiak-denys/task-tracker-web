@@ -157,11 +157,15 @@
 
   @media (min-width: 768px) {
     flex-direction: row;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
   }
 
   .hero-text-block {
+    flex: 1;
+    min-width: 0;
+    padding-right: 1rem;
+
     .hero-title {
       font-size: 1.75rem;
       font-weight: 700;
@@ -181,7 +185,8 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
 
     .search-input-wrapper {
       position: relative;
@@ -202,9 +207,11 @@
         border: 1px solid #d2d0ce;
         border-radius: 4px;
         background: #ffffff;
-        width: 240px;
+        width: 220px;
         outline: none;
-        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        transition:
+          border-color 0.15s ease,
+          box-shadow 0.15s ease;
 
         &:focus {
           border-color: #0078d4;
@@ -212,6 +219,54 @@
         }
       }
     }
+
+    .btn-refresh {
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0 0.75rem;
+      background: #ffffff;
+      border: 1px solid #d2d0ce;
+      border-radius: 4px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #323130;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+
+      &:hover:not(:disabled) {
+        background: #f3f2f1;
+        border-color: #a19f9d;
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .refresh-icon.spinning {
+        animation: spin 1s linear infinite;
+      }
+    }
+
+    .btn-primary {
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0 1rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+  }
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
   }
 }
 
@@ -220,7 +275,7 @@
    ========================================================================== */
 .workspaces-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 1.25rem;
 }
 
@@ -232,7 +287,10 @@
   display: flex;
   flex-direction: column;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
   position: relative;
 
   &:hover {
@@ -244,6 +302,11 @@
       background-color: #0078d4;
       color: #ffffff;
     }
+  }
+
+  &.active-card {
+    border-color: #0078d4;
+    box-shadow: 0 0 0 1px #0078d4;
   }
 
   .card-top-row {
@@ -265,8 +328,9 @@
       .badge-code {
         color: #ffffff;
         font-weight: 700;
-        font-size: 0.9375rem;
-        letter-spacing: 0.5px;
+        font-size: 1.125rem;
+        text-transform: uppercase;
+        user-select: none;
       }
     }
 
@@ -325,7 +389,38 @@
 
   .card-footer {
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: space-between;
+
+    .card-actions-left {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .btn-icon-subtle {
+      width: 30px;
+      height: 30px;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: #605e5c;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: #f3f2f1;
+        color: #201f1e;
+      }
+
+      &.btn-icon-danger:hover {
+        background: #fde7e9;
+        color: #a80000;
+      }
+    }
 
     .btn-open-boards {
       display: inline-flex;
@@ -350,7 +445,7 @@
 }
 
 /* ==========================================================================
-   Role Pills & Default Tag
+   Role Pills & Tags
    ========================================================================== */
 .workspace-role-pill {
   font-size: 0.6875rem;
@@ -383,81 +478,4 @@
     color: #797673;
     border: 1px solid #f3e5b3;
   }
-}
-
-.workspace-default-tag {
-  font-size: 0.6875rem;
-  background: #f3f2f1;
-  color: #605e5c;
-  padding: 0.125rem 0.375rem;
-  border-radius: 4px;
-  border: 1px solid #e1dfdd;
-  font-weight: 500;
-}
-
-/* ==========================================================================
-   Empty State
-   ========================================================================== */
-.no-workspaces-box {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 3rem 1.5rem;
-  background: #ffffff;
-  border-radius: 6px;
-  border: 1px dashed #d2d0ce;
-  color: #605e5c;
-
-  svg {
-    color: #a19f9d;
-    margin-bottom: 0.75rem;
-  }
-
-  h3 {
-    margin: 0 0 0.375rem 0;
-    font-size: 1rem;
-    color: #323130;
-  }
-
-  p {
-    margin: 0;
-    font-size: 0.875rem;
-  }
-}
-
-/* ==========================================================================
-   Create Modal Color Picker & Footer
-   ========================================================================== */
-.color-picker-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.25rem;
-
-  .color-chip-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 2px solid transparent;
-    cursor: pointer;
-    transition: transform 0.15s ease, border-color 0.15s ease;
-
-    &:hover {
-      transform: scale(1.1);
-    }
-
-    &.selected {
-      border-color: #201f1e;
-      transform: scale(1.15);
-      box-shadow: 0 0 0 1px #ffffff inset;
-    }
-  }
-}
-
-.modal-footer-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  margin-top: 1rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid #edebe9;
 }

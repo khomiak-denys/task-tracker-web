@@ -1,12 +1,34 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { WorkspaceSelectorComponent } from './workspace-selector';
-import { Workspace, MOCK_WORKSPACES } from '../../../core/models/workspace.models';
+import { Workspace } from '../../../core/models/workspace.models';
 
 describe('WorkspaceSelectorComponent', () => {
   let component: WorkspaceSelectorComponent;
   let fixture: ComponentFixture<WorkspaceSelectorComponent>;
 
-  const mockWorkspaces: Workspace[] = MOCK_WORKSPACES;
+  const mockWorkspaces: Workspace[] = [
+    {
+      id: 'ws-arch-core',
+      name: 'Architecture Lab Core',
+      code: 'ARCH',
+      description: 'Clean architecture microservices, domain events & Aspire orchestrator',
+      role: 'Owner',
+      memberCount: 8,
+      taskCount: 6,
+      color: '#0078D4',
+      isDefault: true,
+    },
+    {
+      id: 'ws-frontend-web',
+      name: 'Frontend Web Portal',
+      code: 'WEB',
+      description: 'Angular 20 OnPush client, Azure DevOps board & design system',
+      role: 'Admin',
+      memberCount: 12,
+      taskCount: 14,
+      color: '#107C10',
+    },
+  ];
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -24,13 +46,13 @@ describe('WorkspaceSelectorComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('Render_Should_DisplayActiveWorkspaceNameAndCode', () => {
+  it('Render_Should_DisplayActiveWorkspaceNameAndInitial', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const nameEl = compiled.querySelector('#selected-workspace-name');
     const badgeEl = compiled.querySelector('.badge-code');
 
     expect(nameEl?.textContent).toContain('Architecture Lab Core');
-    expect(badgeEl?.textContent).toContain('ARCH');
+    expect(badgeEl?.textContent).toContain('A');
   });
 
   it('OnSelectWorkspace_Should_EmitWorkspaceChange_When_NewWorkspaceClicked', () => {
@@ -47,7 +69,9 @@ describe('WorkspaceSelectorComponent', () => {
   });
 
   it('ToggleDropdown_Should_OpenAndCloseDropdown_When_TriggerClicked', () => {
-    const trigger = fixture.nativeElement.querySelector('#ws-dropdown-trigger') as HTMLButtonElement;
+    const trigger = fixture.nativeElement.querySelector(
+      '#ws-dropdown-trigger',
+    ) as HTMLButtonElement;
     expect(trigger).toBeTruthy();
 
     trigger.click();
@@ -60,7 +84,9 @@ describe('WorkspaceSelectorComponent', () => {
   });
 
   it('FilterWorkspaces_Should_FilterItems_When_SearchInputProvided', () => {
-    const trigger = fixture.nativeElement.querySelector('#ws-dropdown-trigger') as HTMLButtonElement;
+    const trigger = fixture.nativeElement.querySelector(
+      '#ws-dropdown-trigger',
+    ) as HTMLButtonElement;
     trigger.click();
     fixture.detectChanges();
 
@@ -76,18 +102,24 @@ describe('WorkspaceSelectorComponent', () => {
   it('OnCreateWorkspace_Should_EmitCreateWorkspaceEvent_When_NewWorkspaceClicked', () => {
     spyOn(component.createWorkspace, 'emit');
 
-    const trigger = fixture.nativeElement.querySelector('#ws-dropdown-trigger') as HTMLButtonElement;
+    const trigger = fixture.nativeElement.querySelector(
+      '#ws-dropdown-trigger',
+    ) as HTMLButtonElement;
     trigger.click();
     fixture.detectChanges();
 
-    const createBtn = fixture.nativeElement.querySelector('#btn-create-workspace') as HTMLButtonElement;
+    const createBtn = fixture.nativeElement.querySelector(
+      '#btn-create-workspace',
+    ) as HTMLButtonElement;
     createBtn.click();
 
     expect(component.createWorkspace.emit).toHaveBeenCalled();
   });
 
   it('OnEscapePress_Should_CloseDropdown_When_EscapeKeyPressed', () => {
-    const trigger = fixture.nativeElement.querySelector('#ws-dropdown-trigger') as HTMLButtonElement;
+    const trigger = fixture.nativeElement.querySelector(
+      '#ws-dropdown-trigger',
+    ) as HTMLButtonElement;
     trigger.click();
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('#ws-dropdown-menu')).toBeTruthy();
