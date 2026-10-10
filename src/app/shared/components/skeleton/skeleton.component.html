@@ -1,0 +1,75 @@
+@switch (variant) {
+  @case ('workspace-card') {
+    @for (item of items; track item) {
+      <div class="skeleton-workspace-card" role="status" aria-label="Loading workspace">
+        <div class="skeleton-card-top-row">
+          <div class="skeleton-badge shimmer"></div>
+          <div class="skeleton-role-pill shimmer"></div>
+        </div>
+        <div class="skeleton-card-info">
+          <div class="skeleton-line skeleton-title shimmer"></div>
+          <div class="skeleton-line skeleton-desc shimmer"></div>
+          <div class="skeleton-line skeleton-desc-short shimmer"></div>
+        </div>
+        <div class="skeleton-card-meta-row">
+          <div class="skeleton-meta-item shimmer"></div>
+          <div class="skeleton-meta-item shimmer"></div>
+        </div>
+        <div class="skeleton-card-footer">
+          <div class="skeleton-btn shimmer"></div>
+        </div>
+      </div>
+    }
+  }
+
+  @case ('task-card') {
+    @for (item of items; track item) {
+      <div class="skeleton-task-card" role="status" aria-label="Loading task">
+        <div class="skeleton-task-inner">
+          <div class="skeleton-card-top-row">
+            <div class="skeleton-priority-pill shimmer"></div>
+          </div>
+          <div class="skeleton-line skeleton-task-title shimmer"></div>
+          <div class="skeleton-line skeleton-task-desc shimmer"></div>
+          <div class="skeleton-tags-row">
+            <div class="skeleton-tag shimmer"></div>
+            <div class="skeleton-tag shimmer"></div>
+          </div>
+          <div class="skeleton-task-footer">
+            <div class="skeleton-date shimmer"></div>
+          </div>
+        </div>
+      </div>
+    }
+  }
+
+  @case ('task-row') {
+    @for (item of items; track item) {
+      <tr class="skeleton-table-row" role="status" aria-label="Loading row">
+        <td><div class="skeleton-status-pill shimmer"></div></td>
+        <td><div class="skeleton-priority-pill shimmer"></div></td>
+        <td>
+          <div class="skeleton-line skeleton-title shimmer"></div>
+          <div class="skeleton-line skeleton-desc-short shimmer"></div>
+        </td>
+        <td>
+          <div class="skeleton-tags-row">
+            <div class="skeleton-tag shimmer"></div>
+          </div>
+        </td>
+        <td><div class="skeleton-date shimmer"></div></td>
+      </tr>
+    }
+  }
+
+  @default {
+    @for (item of items; track item) {
+      <div
+        class="skeleton-rect shimmer"
+        [class.skeleton-text]="variant === 'text'"
+        role="status"
+        aria-label="Loading"
+      ></div>
+    }
+  }
+}

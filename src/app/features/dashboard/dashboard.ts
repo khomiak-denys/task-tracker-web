@@ -33,6 +33,7 @@ import {
 } from '../../core/models/task.models';
 import { Workspace } from '../../core/models/workspace.models';
 import { TaskDetailsComponent } from './task-details/task-details.component';
+import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
 
 export type DashboardTab = 'board' | 'list' | 'statistics';
 
@@ -110,6 +111,7 @@ export interface KpiSummary {
     DatePipe,
     RouterLink,
     TaskDetailsComponent,
+    SkeletonComponent,
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
@@ -118,7 +120,7 @@ export interface KpiSummary {
 export class DashboardComponent implements OnInit {
   private readonly workspaceService = inject(WorkspaceService);
   private readonly stateSubject = new BehaviorSubject<DashboardState>({
-    loading: false,
+    loading: !!this.workspaceService.currentWorkspace?.id,
     dropdownOpen: false,
     userInitial: this.calculateUserInitial(),
     activeTab: 'board',

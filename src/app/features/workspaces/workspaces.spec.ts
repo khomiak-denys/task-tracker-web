@@ -143,6 +143,14 @@ describe('WorkspacesComponent', () => {
     expect(fixture.nativeElement.querySelector('#btn-delete-' + mockWorkspaces[0].id)).toBeNull();
   });
 
+  it('Loading_Should_DisplaySkeletonCards_When_LoadingIsTrue', () => {
+    component['updateState']({ loading: true });
+    fixture.detectChanges();
+
+    const skeletons = fixture.nativeElement.querySelectorAll('.skeleton-workspace-card');
+    expect(skeletons.length).toBe(6);
+  });
+
   it('GetWorkspaceInitial_Should_ReturnFirstLetterUppercase', () => {
     expect(component['getWorkspaceInitial']('second workspace')).toBe('S');
     expect(component['getWorkspaceInitial'](' Architecture ')).toBe('A');
