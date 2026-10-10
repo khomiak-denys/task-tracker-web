@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { of, throwError } from 'rxjs';
 import { DashboardComponent } from './dashboard';
 import { AuthService } from '../../core/services/auth.service';
@@ -7,7 +9,7 @@ import { NotificationService } from '../../core/services/notification.service';
 import { TaskService } from '../../core/services/task.service';
 import { TaskResult, TaskDetailsResult } from '../../core/models/task.models';
 import { WorkspaceService } from '../../core/services/workspace.service';
-import { MOCK_WORKSPACES } from '../../core/models/workspace.models';
+import { Workspace } from '../../core/models/workspace.models';
 
 describe('DashboardComponent', () => {
   let component: DashboardComponent;
@@ -16,6 +18,17 @@ describe('DashboardComponent', () => {
   let notificationServiceSpy: jasmine.SpyObj<NotificationService>;
   let routerSpy: jasmine.SpyObj<Router>;
   let taskServiceSpy: jasmine.SpyObj<TaskService>;
+  const mockWorkspace: Workspace = {
+    id: 'ws-arch-core',
+    name: 'Architecture Lab Core',
+    code: 'ARCH',
+    description: 'Clean architecture microservices',
+    role: 'Owner',
+    memberCount: 8,
+    taskCount: 6,
+    color: '#0078D4',
+    isDefault: true,
+  };
 
   const mockTasks: TaskResult[] = [
     {
@@ -82,7 +95,11 @@ describe('DashboardComponent', () => {
       iat: 1000000000,
     });
 
-    notificationServiceSpy = jasmine.createSpyObj('NotificationService', ['info', 'success', 'error']);
+    notificationServiceSpy = jasmine.createSpyObj('NotificationService', [
+      'info',
+      'success',
+      'error',
+    ]);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     taskServiceSpy = jasmine.createSpyObj('TaskService', [
@@ -115,6 +132,8 @@ describe('DashboardComponent', () => {
       imports: [DashboardComponent],
       providers: [
         provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: AuthService, useValue: authServiceSpy },
         { provide: NotificationService, useValue: notificationServiceSpy },
         { provide: TaskService, useValue: taskServiceSpy },
@@ -124,6 +143,10 @@ describe('DashboardComponent', () => {
     const router = TestBed.inject(Router);
     spyOn(router, 'navigate');
     routerSpy = router as unknown as jasmine.SpyObj<Router>;
+
+    const wsService = TestBed.inject(WorkspaceService);
+    wsService.selectWorkspace(mockWorkspace);
+    spyOn(wsService, 'loadWorkspaces').and.returnValue(of([mockWorkspace]));
 
     fixture = TestBed.createComponent(DashboardComponent);
     component = fixture.componentInstance;
@@ -174,7 +197,6 @@ describe('DashboardComponent', () => {
     expect(component.snapshot.dropdownOpen).toBeFalse();
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/admin']);
   });
-
 
   it('onLogout_Should_NotifyAndCallAuthLogout_When_Invoked', () => {
     component['onLogout']();
@@ -418,7 +440,6 @@ describe('DashboardComponent', () => {
     expect(component['logTimeForm'].get('minutesSpent')?.value).toBe(480);
   });
 
-
   it('onEscape_Should_CloseOpenModalsOrBladePriorToDropdown_When_Invoked', () => {
     // 1. Create Modal
     component['openCreateModal']();
@@ -452,6 +473,22 @@ describe('DashboardComponent', () => {
 
     expect(component.snapshot.tasks).toEqual([]);
     expect(component.snapshot.loading).toBeFalse();
+  });
+
+  it('loadTasks_Should_NotMakeHttpCall_When_NoWorkspaceSelected', () => {
+    taskServiceSpy.getMy.calls.reset();
+    taskServiceSpy.getAll.calls.reset();
+
+    component['updateState']({ selectedWorkspace: null });
+    const wsService = TestBed.inject(WorkspaceService);
+    spyOnProperty(wsService, 'currentWorkspace', 'get').and.returnValue(null);
+
+    component['loadTasks']();
+
+    expect(taskServiceSpy.getMy).not.toHaveBeenCalled();
+    expect(taskServiceSpy.getAll).not.toHaveBeenCalled();
+    expect(component.snapshot.loading).toBeFalse();
+    expect(component.snapshot.tasks).toEqual([]);
   });
 
   it('setLayoutMode_Should_UpdateLayoutMode_When_Invoked', () => {
@@ -554,11 +591,17 @@ describe('DashboardComponent', () => {
     const workspaceService = TestBed.inject(WorkspaceService);
     const selectSpy = spyOn(workspaceService, 'selectWorkspace').and.callThrough();
 
-    const targetWs = MOCK_WORKSPACES[1];
+    const targetWs: Workspace = {
+      ...mockWorkspace,
+      id: 'ws-frontend-web',
+      name: 'Frontend Web Portal',
+    };
     component['onWorkspaceChange'](targetWs);
 
     expect(selectSpy).toHaveBeenCalledWith(targetWs);
-    expect(notificationServiceSpy.info).toHaveBeenCalledWith(`Switched active workspace to: ${targetWs.name}`);
+    expect(notificationServiceSpy.info).toHaveBeenCalledWith(
+      `Switched active workspace to: ${targetWs.name}`,
+    );
   });
 
   it('onWorkspaces_Should_CloseDropdownAndNavigateToWorkspaces', () => {
@@ -568,4 +611,3 @@ describe('DashboardComponent', () => {
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/workspaces']);
   });
 });
-

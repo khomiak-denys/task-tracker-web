@@ -34,47 +34,30 @@ $az-task-gold: #ffb900;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideInRight {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 
 /* Header */
 .blade-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 0.875rem 1.5rem 0.5rem;
   border-bottom: 1px solid $az-border;
-}
-
-.header-type-badge {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8125rem;
-
-  .type-icon-box {
-    color: $az-task-gold;
-    display: inline-flex;
-  }
-
-  .type-label {
-    font-weight: 700;
-    color: $az-text;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .item-id {
-    color: $az-subtext;
-    font-family: Consolas, monospace;
-    font-weight: 500;
-  }
 }
 
 .blade-close-btn {
@@ -146,7 +129,9 @@ $az-task-gold: #ffb900;
   border-radius: 2px;
   cursor: pointer;
   appearance: auto;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 
   &:hover {
     border-color: #a19f9d;
@@ -187,12 +172,17 @@ $az-task-gold: #ffb900;
     background: #107c41;
     color: #ffffff;
     border-color: #107c41;
-    &:hover { background: #0b6a37; }
+    &:hover {
+      background: #0b6a37;
+    }
   }
 
   &.ribbon-btn-danger {
     color: #a80000;
-    &:hover { background: #fde7e9; border-color: #a80000; }
+    &:hover {
+      background: #fde7e9;
+      border-color: #a80000;
+    }
   }
 }
 
@@ -470,10 +460,22 @@ $az-task-gold: #ffb900;
   padding: 0.125rem 0.5rem;
   border-radius: 3px;
 
-  &.priority-critical { background: #fde7e9; color: #a80000; }
-  &.priority-high { background: #fff4ce; color: #794a00; }
-  &.priority-medium { background: #eff6fc; color: #004578; }
-  &.priority-low { background: #f3f2f1; color: #605e5c; }
+  &.priority-critical {
+    background: #fde7e9;
+    color: #a80000;
+  }
+  &.priority-high {
+    background: #fff4ce;
+    color: #794a00;
+  }
+  &.priority-medium {
+    background: #eff6fc;
+    color: #004578;
+  }
+  &.priority-low {
+    background: #f3f2f1;
+    color: #605e5c;
+  }
 }
 
 /* Discussion / Comments */
@@ -524,7 +526,9 @@ $az-task-gold: #ffb900;
   border: 1px solid #d2d0ce;
   border-radius: 4px;
   padding: 0.5rem;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 
   &:focus-within {
     border-color: $az-blue;
@@ -567,7 +571,9 @@ $az-task-gold: #ffb900;
   font-weight: 600;
   border-radius: 2px;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
 
   &:hover:not(:disabled) {
     background: #106ebe;
