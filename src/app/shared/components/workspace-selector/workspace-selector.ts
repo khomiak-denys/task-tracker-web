@@ -92,4 +92,10 @@ export class WorkspaceSelectorComponent {
   protected onEscapePress(): void {
     this.closeDropdown();
   }
+
+  protected getWorkspaceInitial(name: string | null | undefined): string {
+    if (!name) return 'W';
+    const trimmed = name.trim();
+    return trimmed ? trimmed.charAt(0).toUpperCase() : 'W';
+  }
 }
