@@ -11,7 +11,7 @@ import { WorkspaceService } from '../../core/services/workspace.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { UserResult, UserProfile } from '../../core/models/user.models';
 import { TaskResult, TaskDetailsResult } from '../../core/models/task.models';
-import { Workspace, MOCK_WORKSPACES } from '../../core/models/workspace.models';
+import { Workspace } from '../../core/models/workspace.models';
 
 describe('AdminComponent', () => {
   let component: AdminComponent;
@@ -85,6 +85,40 @@ describe('AdminComponent', () => {
     lockoutEnabled: false,
     accessFailedCount: 0,
   };
+
+  const mockWorkspaces: Workspace[] = [
+    {
+      id: 'ws-arch-core',
+      name: 'Architecture Lab Core',
+      code: 'ARCH',
+      description: 'Clean architecture microservices, domain events & Aspire orchestrator',
+      role: 'Owner',
+      memberCount: 8,
+      taskCount: 6,
+      color: '#0078D4',
+      isDefault: true,
+    },
+    {
+      id: 'ws-frontend-web',
+      name: 'Frontend Web Portal',
+      code: 'WEB',
+      description: 'Angular 20 OnPush client, Azure DevOps board & design system',
+      role: 'Admin',
+      memberCount: 12,
+      taskCount: 14,
+      color: '#107C10',
+    },
+    {
+      id: 'ws-gateway-security',
+      name: 'API Gateway & Security',
+      code: 'GW',
+      description: 'YARP reverse proxy, JWT refresh rotation & policy enforcements',
+      role: 'Contributor',
+      memberCount: 5,
+      taskCount: 4,
+      color: '#5C2D91',
+    },
+  ];
 
   beforeEach(async () => {
     authServiceSpy = jasmine.createSpyObj('AuthService', [
@@ -162,9 +196,9 @@ describe('AdminComponent', () => {
         'selectWorkspace',
       ],
       {
-        workspaces$: of(MOCK_WORKSPACES),
-        allWorkspaces: MOCK_WORKSPACES,
-        currentWorkspace: MOCK_WORKSPACES[0],
+        workspaces$: of(mockWorkspaces),
+        allWorkspaces: mockWorkspaces,
+        currentWorkspace: mockWorkspaces[0],
       },
     );
     workspaceServiceSpy.createWorkspace.and.callFake((data) => ({
@@ -172,7 +206,7 @@ describe('AdminComponent', () => {
       id: 'ws-new-created',
     }));
     workspaceServiceSpy.updateWorkspace.and.callFake((id, data) => ({
-      ...MOCK_WORKSPACES[0],
+      ...mockWorkspaces[0],
       ...data,
       id,
     }));
@@ -269,7 +303,9 @@ describe('AdminComponent', () => {
     component.onConfirmDeleteUser();
 
     expect(userServiceSpy.deleteUser).toHaveBeenCalledWith('user-1');
-    expect(notificationServiceSpy.success).toHaveBeenCalledWith("User 'john_doe' has been deleted.");
+    expect(notificationServiceSpy.success).toHaveBeenCalledWith(
+      "User 'john_doe' has been deleted.",
+    );
     expect(component.snapshot.isDeleteModalOpen).toBeFalse();
   });
 
@@ -293,13 +329,17 @@ describe('AdminComponent', () => {
     // Assign 'Manager'
     component.toggleRole('Manager');
     expect(roleServiceSpy.assignRole).toHaveBeenCalledWith('user-1', 'Manager');
-    expect(notificationServiceSpy.success).toHaveBeenCalledWith("Role 'Manager' assigned to john_doe.");
+    expect(notificationServiceSpy.success).toHaveBeenCalledWith(
+      "Role 'Manager' assigned to john_doe.",
+    );
     expect(component.isRoleAssigned('Manager')).toBeTrue();
 
     // Remove 'Manager'
     component.toggleRole('Manager');
     expect(roleServiceSpy.removeRole).toHaveBeenCalledWith('user-1', 'Manager');
-    expect(notificationServiceSpy.success).toHaveBeenCalledWith("Role 'Manager' removed from john_doe.");
+    expect(notificationServiceSpy.success).toHaveBeenCalledWith(
+      "Role 'Manager' removed from john_doe.",
+    );
     expect(component.isRoleAssigned('Manager')).toBeFalse();
   });
 
@@ -444,7 +484,7 @@ describe('AdminComponent', () => {
   });
 
   it('openEditWorkspaceModal_Should_PopulateFormWithExistingValues_When_Invoked', () => {
-    const ws = MOCK_WORKSPACES[0];
+    const ws = mockWorkspaces[0];
     component.openEditWorkspaceModal(ws);
 
     expect(component.snapshot.isWorkspaceModalOpen).toBeTrue();
@@ -455,7 +495,7 @@ describe('AdminComponent', () => {
   });
 
   it('saveWorkspace_Should_CallUpdateWorkspaceAndNotify_When_ModeIsEdit', () => {
-    const ws = MOCK_WORKSPACES[0];
+    const ws = mockWorkspaces[0];
     component.openEditWorkspaceModal(ws);
     component.onWorkspaceFormNameChange('Updated Core Lab');
 
@@ -474,7 +514,7 @@ describe('AdminComponent', () => {
   });
 
   it('openDeleteWorkspaceModal_Should_OpenConfirmModal_When_MultipleWorkspacesExist', () => {
-    const ws = MOCK_WORKSPACES[1];
+    const ws = mockWorkspaces[1];
     component.openDeleteWorkspaceModal(ws);
 
     expect(component.snapshot.isDeleteWorkspaceModalOpen).toBeTrue();
@@ -482,19 +522,17 @@ describe('AdminComponent', () => {
   });
 
   it('confirmDeleteWorkspace_Should_CallDeleteWorkspaceAndNotify_When_Confirmed', () => {
-    const ws = MOCK_WORKSPACES[1];
+    const ws = mockWorkspaces[1];
     component.openDeleteWorkspaceModal(ws);
     component.confirmDeleteWorkspace();
 
     expect(workspaceServiceSpy.deleteWorkspace).toHaveBeenCalledWith(ws.id);
-    expect(notificationServiceSpy.success).toHaveBeenCalledWith(
-      jasmine.stringMatching(/deleted/),
-    );
+    expect(notificationServiceSpy.success).toHaveBeenCalledWith(jasmine.stringMatching(/deleted/));
     expect(component.snapshot.isDeleteWorkspaceModalOpen).toBeFalse();
   });
 
   it('onSetDefaultWorkspace_Should_CallServiceSetDefault_When_Invoked', () => {
-    const ws = MOCK_WORKSPACES[1];
+    const ws = mockWorkspaces[1];
     component.onSetDefaultWorkspace(ws);
 
     expect(workspaceServiceSpy.setDefaultWorkspace).toHaveBeenCalledWith(ws.id);
@@ -504,7 +542,7 @@ describe('AdminComponent', () => {
   });
 
   it('onSelectAndSwitchWorkspace_Should_CallServiceSelectWorkspace_When_Invoked', () => {
-    const ws = MOCK_WORKSPACES[2];
+    const ws = mockWorkspaces[2];
     component.onSelectAndSwitchWorkspace(ws);
 
     expect(workspaceServiceSpy.selectWorkspace).toHaveBeenCalledWith(ws);
@@ -521,7 +559,7 @@ describe('AdminComponent', () => {
     expect(component.snapshot.isWorkspaceModalOpen).toBeFalse();
 
     // Workspace Delete modal
-    component.openDeleteWorkspaceModal(MOCK_WORKSPACES[0]);
+    component.openDeleteWorkspaceModal(mockWorkspaces[0]);
     expect(component.snapshot.isDeleteWorkspaceModalOpen).toBeTrue();
     component.onEscape();
     expect(component.snapshot.isDeleteWorkspaceModalOpen).toBeFalse();
