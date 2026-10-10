@@ -1,22 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import {
-  BehaviorSubject,
-  Observable,
-  distinctUntilChanged,
-  map,
-  tap,
-  catchError,
-  of,
-} from 'rxjs';
+import { BehaviorSubject, Observable, distinctUntilChanged, map, tap, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import {
-  LoginRequest,
-  RegisterRequest,
-  AuthResponse,
-  JwtPayload,
-} from '../models/auth.models';
+import { LoginRequest, RegisterRequest, AuthResponse, JwtPayload } from '../models/auth.models';
 
 const TOKEN_KEY = 'access_token';
 
@@ -60,6 +47,15 @@ export class AuthService {
     distinctUntilChanged(),
   );
 
+  /** Reactive stream of whether the current user has the Manager role. */
+  readonly isManager$: Observable<boolean> = this.currentUser$.pipe(
+    map((user) => {
+      if (!user || !user.role) return false;
+      if (Array.isArray(user.role)) return user.role.includes('Manager');
+      return user.role === 'Manager';
+    }),
+    distinctUntilChanged(),
+  );
 
   constructor(
     private readonly http: HttpClient,
@@ -82,6 +78,13 @@ export class AuthService {
     return user.role === 'Admin';
   }
 
+  /** Synchronous check whether current user holds the Manager role. */
+  isManager(): boolean {
+    const user = this.currentUser();
+    if (!user || !user.role) return false;
+    if (Array.isArray(user.role)) return user.role.includes('Manager');
+    return user.role === 'Manager';
+  }
 
   /** Synchronous getter for currently decoded user. */
   currentUser(): JwtPayload | null {
@@ -130,11 +133,7 @@ export class AuthService {
    */
   refresh(): Observable<string | null> {
     return this.http
-      .post<AuthResponse>(
-        `${this.apiUrl}/refresh`,
-        null,
-        { withCredentials: true },
-      )
+      .post<AuthResponse>(`${this.apiUrl}/refresh`, null, { withCredentials: true })
       .pipe(
         map((res) => this.extractToken(res)),
         tap((token) => this.storeToken(token)),
@@ -192,9 +191,7 @@ export class AuthService {
     try {
       const parts = token.split('.');
       if (parts.length !== 3) return null;
-      const payload = parts[1]
-        .replace(/-/g, '+')
-        .replace(/_/g, '/');
+      const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
       const raw = JSON.parse(atob(payload)) as Record<string, unknown>;
 
       const sub =
@@ -217,7 +214,8 @@ export class AuthService {
       const role =
         (raw['role'] as string | string[]) ||
         (raw['roles'] as string | string[]) ||
-        (raw['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] as string | string[]) ||
+        (raw['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] as
+          string | string[]) ||
         'User';
 
       return {
