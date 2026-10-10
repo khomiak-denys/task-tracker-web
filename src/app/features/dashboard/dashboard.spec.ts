@@ -610,4 +610,20 @@ describe('DashboardComponent', () => {
     expect(component.snapshot.dropdownOpen).toBeFalse();
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/workspaces']);
   });
+
+  it('Loading_Should_DisplaySkeletonTaskCards_When_LoadingIsTrueAndBoardTabActive', () => {
+    component['updateState']({ loading: true, activeTab: 'board' });
+    fixture.detectChanges();
+
+    const skeletonCards = fixture.nativeElement.querySelectorAll('.skeleton-task-card');
+    expect(skeletonCards.length).toBeGreaterThan(0);
+  });
+
+  it('Loading_Should_DisplaySkeletonTableRows_When_LoadingIsTrueAndListTabActive', () => {
+    component['updateState']({ loading: true, activeTab: 'list' });
+    fixture.detectChanges();
+
+    const skeletonRows = fixture.nativeElement.querySelectorAll('.skeleton-table-row');
+    expect(skeletonRows.length).toBe(5);
+  });
 });
