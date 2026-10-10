@@ -218,138 +218,142 @@
 
     <!-- Workspaces Grid -->
     <section class="workspaces-grid" aria-label="Workspaces">
-      @for (ws of filteredWorkspaces$ | async; track ws.id) {
-        <article
-          class="workspace-card"
-          [class.active-card]="isCurrentActive(ws)"
-          [attr.id]="'workspace-card-' + ws.id"
-          (click)="onSelectWorkspace(ws)"
-        >
-          <div class="card-top-row">
-            <div
-              class="workspace-badge"
-              [style.background-color]="ws.color"
-              [attr.aria-label]="ws.name"
-            >
-              <span class="badge-code">{{ getWorkspaceInitial(ws.name) }}</span>
+      @if ((state$ | async)?.loading) {
+        <app-skeleton variant="workspace-card" [count]="6"></app-skeleton>
+      } @else {
+        @for (ws of filteredWorkspaces$ | async; track ws.id) {
+          <article
+            class="workspace-card"
+            [class.active-card]="isCurrentActive(ws)"
+            [attr.id]="'workspace-card-' + ws.id"
+            (click)="onSelectWorkspace(ws)"
+          >
+            <div class="card-top-row">
+              <div
+                class="workspace-badge"
+                [style.background-color]="ws.color"
+                [attr.aria-label]="ws.name"
+              >
+                <span class="badge-code">{{ getWorkspaceInitial(ws.name) }}</span>
+              </div>
+
+              <div class="card-badge-group">
+                @if (isCurrentActive(ws)) {
+                  <span class="workspace-active-tag">Active</span>
+                }
+                @if (ws.isDefault) {
+                  <span class="workspace-default-tag">Default</span>
+                }
+                <span class="workspace-role-pill" [class]="'role-' + ws.role.toLowerCase()">
+                  {{ ws.role }}
+                </span>
+              </div>
             </div>
 
-            <div class="card-badge-group">
-              @if (isCurrentActive(ws)) {
-                <span class="workspace-active-tag">Active</span>
-              }
-              @if (ws.isDefault) {
-                <span class="workspace-default-tag">Default</span>
-              }
-              <span class="workspace-role-pill" [class]="'role-' + ws.role.toLowerCase()">
-                {{ ws.role }}
+            <div class="card-info">
+              <h2 class="workspace-card-title">{{ ws.name }}</h2>
+              <p class="workspace-card-desc">{{ ws.description || 'No description provided' }}</p>
+            </div>
+
+            <div class="card-meta-row">
+              <span class="card-meta-item">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                {{ ws.memberCount }} members
+              </span>
+
+              <span class="meta-separator">•</span>
+
+              <span class="card-meta-item">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="9 11 12 14 22 4"></polyline>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+                {{ ws.taskCount }} tasks
               </span>
             </div>
-          </div>
 
-          <div class="card-info">
-            <h2 class="workspace-card-title">{{ ws.name }}</h2>
-            <p class="workspace-card-desc">{{ ws.description || 'No description provided' }}</p>
-          </div>
-
-          <div class="card-meta-row">
-            <span class="card-meta-item">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-              {{ ws.memberCount }} members
-            </span>
-
-            <span class="meta-separator">•</span>
-
-            <span class="card-meta-item">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <polyline points="9 11 12 14 22 4"></polyline>
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-              </svg>
-              {{ ws.taskCount }} tasks
-            </span>
-          </div>
-
-          <div class="card-footer" (click)="$event.stopPropagation()">
-            <div class="card-actions-left">
-              @if (!ws.isDefault) {
-                <button
-                  type="button"
-                  class="btn-icon-subtle"
-                  (click)="onSetDefault(ws, $event)"
-                  title="Set as default workspace"
-                  [attr.id]="'btn-default-' + ws.id"
-                >
-                  <svg
-                    width="15"
-                    height="15"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
+            <div class="card-footer" (click)="$event.stopPropagation()">
+              <div class="card-actions-left">
+                @if (!ws.isDefault) {
+                  <button
+                    type="button"
+                    class="btn-icon-subtle"
+                    (click)="onSetDefault(ws, $event)"
+                    title="Set as default workspace"
+                    [attr.id]="'btn-default-' + ws.id"
                   >
-                    <polygon
-                      points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
-                    ></polygon>
-                  </svg>
-                </button>
-              }
-            </div>
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <polygon
+                        points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                      ></polygon>
+                    </svg>
+                  </button>
+                }
+              </div>
 
-            <button
-              type="button"
-              class="btn-open-boards"
-              (click)="onSelectWorkspace(ws)"
-              [attr.id]="'btn-open-' + ws.id"
-            >
-              <span>Open Boards</span>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
+              <button
+                type="button"
+                class="btn-open-boards"
+                (click)="onSelectWorkspace(ws)"
+                [attr.id]="'btn-open-' + ws.id"
               >
-                <polyline points="9 18 15 12 9 6"></polyline>
-              </svg>
-            </button>
+                <span>Open Boards</span>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
+          </article>
+        } @empty {
+          <div class="no-workspaces-box">
+            <svg
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+            </svg>
+            <h3>No matching workspaces found</h3>
+            <p>Try searching for another keyword or create a new workspace to get started.</p>
           </div>
-        </article>
-      } @empty {
-        <div class="no-workspaces-box">
-          <svg
-            width="48"
-            height="48"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-          >
-            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-          </svg>
-          <h3>No matching workspaces found</h3>
-          <p>Try searching for another keyword or create a new workspace to get started.</p>
-        </div>
+        }
       }
     </section>
   </main>

@@ -26,6 +26,7 @@ import {
   WORKSPACE_COLOR_PALETTE,
   generateWorkspaceCode,
 } from '../../core/models/workspace.models';
+import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
 
 export interface WorkspacesState {
   readonly searchQuery: string;
@@ -39,7 +40,7 @@ export interface WorkspacesState {
 const initialState: WorkspacesState = {
   searchQuery: '',
   isCreateModalOpen: false,
-  loading: false,
+  loading: true,
   submitting: false,
   dropdownOpen: false,
   userInitial: 'U',
@@ -48,7 +49,7 @@ const initialState: WorkspacesState = {
 @Component({
   selector: 'app-workspaces',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, SkeletonComponent],
   templateUrl: './workspaces.html',
   styleUrl: './workspaces.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
