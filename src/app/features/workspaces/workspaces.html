@@ -2,15 +2,30 @@
   <!-- Azure DevOps Top Navigation Bar -->
   <header class="workspaces-header">
     <div class="header-left">
-      <div class="azure-brand">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2L2 7V10C2 16.5 6.84 22.74 12 24C17.16 22.74 22 16.5 22 10V7L12 2Z"
-                fill="url(#ws-shield)" opacity="0.95"/>
-          <path d="M9 12L11 14L15 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <div class="azure-brand" (click)="refreshWorkspaces()">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 2L2 7V10C2 16.5 6.84 22.74 12 24C17.16 22.74 22 16.5 22 10V7L12 2Z"
+            fill="url(#ws-shield)"
+            opacity="0.95"
+          />
+          <path
+            d="M9 12L11 14L15 10"
+            stroke="white"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
           <defs>
             <linearGradient id="ws-shield" x1="2" y1="2" x2="22" y2="24">
-              <stop stop-color="#0078D4"/>
-              <stop offset="1" stop-color="#00BCF2"/>
+              <stop stop-color="#0078D4" />
+              <stop offset="1" stop-color="#00BCF2" />
             </linearGradient>
           </defs>
         </svg>
@@ -48,7 +63,15 @@
                   role="menuitem"
                   id="menu-item-profile"
                 >
-                  <svg class="dropdown-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <svg
+                    class="dropdown-icon"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg>
@@ -63,7 +86,15 @@
                     role="menuitem"
                     id="menu-item-admin"
                   >
-                    <svg class="dropdown-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg
+                      class="dropdown-icon"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
                       <rect x="2" y="3" width="20" height="18" rx="2" ry="2"></rect>
                       <line x1="9" y1="3" x2="9" y2="21"></line>
                     </svg>
@@ -78,7 +109,15 @@
                   role="menuitem"
                   id="menu-item-logout"
                 >
-                  <svg class="dropdown-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <svg
+                    class="dropdown-icon"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                     <polyline points="16 17 21 12 16 7"></polyline>
                     <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -97,28 +136,62 @@
   <main class="workspaces-content">
     <div class="workspaces-hero">
       <div class="hero-text-block">
-        <h1 class="hero-title">Workspaces</h1>
+        <h1 class="hero-title">Workspaces Management</h1>
         <p class="hero-subtitle">
-          Select a workspace where you are a member to view tasks, boards, and team velocity.
+          Collaborate, manage permissions, customize teams, and track project execution across
+          workspaces.
         </p>
       </div>
 
       <div class="hero-actions-bar">
         @if (state$ | async; as state) {
           <div class="search-input-wrapper">
-            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg
+              class="search-icon"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
             <input
               type="text"
               class="search-input"
-              placeholder="Filter your workspaces..."
+              placeholder="Search workspaces..."
               [ngModel]="state.searchQuery"
               (ngModelChange)="updateSearch($event)"
               id="search-workspaces-input"
             />
           </div>
+
+          <button
+            type="button"
+            class="btn-refresh"
+            (click)="refreshWorkspaces()"
+            [disabled]="state.loading"
+            title="Refresh workspaces from server"
+            id="btn-refresh-workspaces"
+          >
+            <svg
+              class="refresh-icon"
+              [class.spinning]="state.loading"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            <span>Refresh</span>
+          </button>
         }
 
         <button
@@ -127,7 +200,14 @@
           (click)="openCreateModal()"
           id="btn-new-workspace"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
@@ -137,10 +217,11 @@
     </div>
 
     <!-- Workspaces Grid -->
-    <section class="workspaces-grid" aria-label="Member Workspaces">
+    <section class="workspaces-grid" aria-label="Workspaces">
       @for (ws of filteredWorkspaces$ | async; track ws.id) {
         <article
           class="workspace-card"
+          [class.active-card]="isCurrentActive(ws)"
           [attr.id]="'workspace-card-' + ws.id"
           (click)="onSelectWorkspace(ws)"
         >
@@ -150,27 +231,37 @@
               [style.background-color]="ws.color"
               [attr.aria-label]="ws.name"
             >
-              <span class="badge-code">{{ ws.code }}</span>
+              <span class="badge-code">{{ getWorkspaceInitial(ws.name) }}</span>
             </div>
 
             <div class="card-badge-group">
-              <span class="workspace-role-pill" [class]="'role-' + ws.role.toLowerCase()">
-                {{ ws.role }}
-              </span>
+              @if (isCurrentActive(ws)) {
+                <span class="workspace-active-tag">Active</span>
+              }
               @if (ws.isDefault) {
                 <span class="workspace-default-tag">Default</span>
               }
+              <span class="workspace-role-pill" [class]="'role-' + ws.role.toLowerCase()">
+                {{ ws.role }}
+              </span>
             </div>
           </div>
 
           <div class="card-info">
             <h2 class="workspace-card-title">{{ ws.name }}</h2>
-            <p class="workspace-card-desc">{{ ws.description }}</p>
+            <p class="workspace-card-desc">{{ ws.description || 'No description provided' }}</p>
           </div>
 
           <div class="card-meta-row">
             <span class="card-meta-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                 <circle cx="9" cy="7" r="4"></circle>
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -182,7 +273,14 @@
             <span class="meta-separator">•</span>
 
             <span class="card-meta-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
                 <polyline points="9 11 12 14 22 4"></polyline>
                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
               </svg>
@@ -190,15 +288,47 @@
             </span>
           </div>
 
-          <div class="card-footer">
+          <div class="card-footer" (click)="$event.stopPropagation()">
+            <div class="card-actions-left">
+              @if (!ws.isDefault) {
+                <button
+                  type="button"
+                  class="btn-icon-subtle"
+                  (click)="onSetDefault(ws, $event)"
+                  title="Set as default workspace"
+                  [attr.id]="'btn-default-' + ws.id"
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <polygon
+                      points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                    ></polygon>
+                  </svg>
+                </button>
+              }
+            </div>
+
             <button
               type="button"
               class="btn-open-boards"
-              (click)="onSelectWorkspace(ws); $event.stopPropagation()"
+              (click)="onSelectWorkspace(ws)"
               [attr.id]="'btn-open-' + ws.id"
             >
               <span>Open Boards</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
                 <polyline points="9 18 15 12 9 6"></polyline>
               </svg>
             </button>
@@ -206,18 +336,27 @@
         </article>
       } @empty {
         <div class="no-workspaces-box">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
             <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
             <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
           </svg>
           <h3>No matching workspaces found</h3>
-          <p>Try searching for a different keyword or create a new workspace.</p>
+          <p>Try searching for another keyword or create a new workspace to get started.</p>
         </div>
       }
     </section>
   </main>
 
-  <!-- Create Workspace Modal -->
+  <!-- ============================================================== -->
+  <!-- CREATE WORKSPACE MODAL -->
+  <!-- ============================================================== -->
   @if ((state$ | async)?.isCreateModalOpen) {
     <div class="modal-overlay" (click)="closeCreateModal()"></div>
     <div class="azure-modal" role="dialog" aria-modal="true" aria-labelledby="create-ws-title">
@@ -234,6 +373,42 @@
       </div>
 
       <form [formGroup]="createForm" (ngSubmit)="submitCreateWorkspace()" class="azure-modal-form">
+        @if (authService.isManager() || authService.isAdmin()) {
+          <div class="permission-notice permission-notice-verified">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <span>Manager role verified. You have full workspace provisioning rights.</span>
+          </div>
+        } @else {
+          <div class="permission-notice permission-notice-warning">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span
+              >Workspace creation requires the <strong>Manager</strong> role in the backend. You can
+              manage roles in the Admin Console.</span
+            >
+          </div>
+        }
+
         <div class="form-field">
           <label for="ws-name-input">Workspace Name *</label>
           <input
@@ -242,32 +417,48 @@
             class="azure-input"
             formControlName="name"
             placeholder="e.g. Analytics Platform"
+            autocomplete="off"
           />
           @if (createForm.get('name')?.touched && createForm.get('name')?.errors?.['required']) {
             <span class="field-error">Name is required</span>
           }
+          @if (createForm.get('name')?.touched && createForm.get('name')?.errors?.['minlength']) {
+            <span class="field-error">Name must be at least 3 characters</span>
+          }
         </div>
 
         <div class="form-field">
-          <label for="ws-desc-input">Description *</label>
+          <label for="ws-desc-input">Description</label>
           <textarea
             id="ws-desc-input"
             class="azure-textarea"
             formControlName="description"
             rows="3"
-            placeholder="Briefly describe what this workspace covers..."
+            placeholder="Describe the projects, domain, and goals for this workspace..."
           ></textarea>
-          @if (createForm.get('description')?.touched && createForm.get('description')?.errors?.['required']) {
-            <span class="field-error">Description is required</span>
-          }
         </div>
 
         <div class="modal-footer-actions">
-          <button type="button" class="btn-secondary" (click)="closeCreateModal()">
+          <button
+            type="button"
+            class="btn-secondary"
+            (click)="closeCreateModal()"
+            [disabled]="(state$ | async)?.submitting"
+          >
             Cancel
           </button>
-          <button type="submit" class="btn-primary" [disabled]="createForm.invalid">
-            Create & Enter Workspace
+          <button
+            type="submit"
+            class="btn-primary"
+            [disabled]="createForm.invalid || (state$ | async)?.submitting"
+            id="submit-create-workspace-btn"
+          >
+            @if ((state$ | async)?.submitting) {
+              <span class="btn-spinner"></span>
+              <span>Creating...</span>
+            } @else {
+              <span>Create Workspace</span>
+            }
           </button>
         </div>
       </form>
